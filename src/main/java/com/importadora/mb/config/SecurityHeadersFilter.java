@@ -14,7 +14,7 @@ import java.io.IOException;
 public class SecurityHeadersFilter implements Filter {
 
     @Override
-    public void doFilter(ServletRequest request, javax.servlet.ServletResponse response, FilterChain chain)
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         if (response instanceof HttpServletResponse httpResponse) {
             httpResponse.setHeader("X-Content-Type-Options", "nosniff");
