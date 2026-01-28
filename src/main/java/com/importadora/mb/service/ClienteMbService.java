@@ -7,6 +7,8 @@ import com.importadora.mb.web.ClientCreateRequest;
 import com.importadora.mb.web.ClientPaymentRequest;
 import com.importadora.mb.web.ClientUpdateRequest;
 import com.importadora.mb.web.ClienteMbDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +18,8 @@ import java.util.Optional;
 
 @Service
 public class ClienteMbService {
+
+    private static final Logger log = LoggerFactory.getLogger(ClienteMbService.class);
 
     private final ClienteMbRepository repository;
 
@@ -50,7 +54,12 @@ public class ClienteMbService {
 
         recalculateFinancials(entity);
 
-        return ClienteMbDto.fromEntity(repository.save(entity));
+        ClienteMb saved = repository.save(entity);
+        log.info("Created client id={} name={} {} city={} initialDebt={} discount={}",
+                saved.getId(), saved.getFirstName(), saved.getLastName(), saved.getCity(),
+                saved.getDebt(), saved.getDiscount());
+
+        return ClienteMbDto.fromEntity(saved);
     }
 
     @Transactional
@@ -65,7 +74,11 @@ public class ClienteMbService {
                         entity.setDiscount(request.discount());
                     }
                     recalculateFinancials(entity);
-                    return ClienteMbDto.fromEntity(repository.save(entity));
+                    ClienteMb saved = repository.save(entity);
+                    log.info("Updated client id={} name={} {} city={} discount={} status={} totalAmount={}",
+                            saved.getId(), saved.getFirstName(), saved.getLastName(), saved.getCity(),
+                            saved.getDiscount(), saved.getStatus(), saved.getTotalAmount());
+                    return ClienteMbDto.fromEntity(saved);
                 });
     }
 
@@ -77,9 +90,13 @@ public class ClienteMbService {
         return repository.findById(id)
                 .map(entity -> {
                     BigDecimal currentDebt = nullSafe(entity.getDebt());
-                    entity.setDebt(currentDebt.add(request.amount()));
+                    BigDecimal newDebt = currentDebt.add(request.amount());
+                    entity.setDebt(newDebt);
                     recalculateFinancials(entity);
-                    return ClienteMbDto.fromEntity(repository.save(entity));
+                    ClienteMb saved = repository.save(entity);
+                    log.info("Added charge clientId={} amount={} newDebt={} totalAmount={} status={}",
+                            saved.getId(), request.amount(), saved.getDebt(), saved.getTotalAmount(), saved.getStatus());
+                    return ClienteMbDto.fromEntity(saved);
                 });
     }
 
@@ -100,13 +117,18 @@ public class ClienteMbService {
 
                     entity.setPayment(newPayment);
                     recalculateFinancials(entity);
-                    return ClienteMbDto.fromEntity(repository.save(entity));
+                    ClienteMb saved = repository.save(entity);
+                    log.info("Added payment clientId={} amount={} paymentTotal={} remaining={} status={}",
+                            saved.getId(), request.amount(), saved.getPayment(),
+                            saved.getTotalAmount(), saved.getStatus());
+                    return ClienteMbDto.fromEntity(saved);
                 });
     }
 
     @Transactional
     public void delete(Long id) {
         repository.deleteById(id);
+        log.info("Deleted client id={}", id);
     }
 
     private void recalculateFinancials(ClienteMb entity) {

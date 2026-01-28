@@ -1,0 +1,13 @@
+package com.importadora.mb.web;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class SimpleHealthController {
+
+    @GetMapping("/healthz")
+    public String health() {
+        return "OK";
+    }
+}
