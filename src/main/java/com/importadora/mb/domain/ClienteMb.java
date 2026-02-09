@@ -8,7 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "clientes_mb")
@@ -29,7 +29,7 @@ public class ClienteMb {
     private String city;
 
     @Column(name = "registration_date")
-    private LocalDate registrationDate;
+    private LocalDateTime registrationDate;
 
     @Column(name = "debt", nullable = false)
     private BigDecimal debt;
@@ -78,11 +78,11 @@ public class ClienteMb {
         this.city = city;
     }
 
-    public LocalDate getRegistrationDate() {
+    public LocalDateTime getRegistrationDate() {
         return registrationDate;
     }
 
-    public void setRegistrationDate(LocalDate registrationDate) {
+    public void setRegistrationDate(LocalDateTime registrationDate) {
         this.registrationDate = registrationDate;
     }
 
