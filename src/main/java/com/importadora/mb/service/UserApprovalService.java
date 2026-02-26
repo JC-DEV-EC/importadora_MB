@@ -89,4 +89,39 @@ public class UserApprovalService {
             return UserApprovalDto.fromEntity(saved);
         });
     }
+
+    public List<UserApprovalDto> getAllUsers(String adminUid) {
+        if (!isAdmin(adminUid)) return List.of();
+        return repository.findAll().stream()
+                .map(UserApprovalDto::fromEntity)
+                .toList();
+    }
+
+    @Transactional
+    public Optional<UserApprovalDto> changeRole(Long id, String newRole, String adminUid) {
+        if (!isAdmin(adminUid)) return Optional.empty();
+        return repository.findById(id).map(user -> {
+            user.setRole(newRole);
+            UserApproval saved = repository.save(user);
+            log.info("Changed role of user id={} to {} by admin={}", id, newRole, adminUid);
+            return UserApprovalDto.fromEntity(saved);
+        });
+    }
+
+    @Transactional
+    public boolean deleteUser(Long id, String adminUid) {
+        if (!isAdmin(adminUid)) return false;
+        if (repository.existsById(id)) {
+            repository.deleteById(id);
+            log.info("Deleted user id={} by admin={}", id, adminUid);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isAdmin(String uid) {
+        return repository.findByFirebaseUid(uid)
+                .map(u -> "ADMIN".equals(u.getRole()))
+                .orElse(false);
+    }
 }

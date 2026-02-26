@@ -51,4 +51,27 @@ public class UserApprovalController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
     }
+
+    @GetMapping("/users")
+    public List<UserApprovalDto> getAllUsers(@RequestHeader("X-Admin-Uid") String adminUid) {
+        return service.getAllUsers(adminUid);
+    }
+
+    @PutMapping("/users/{id}/role")
+    public ResponseEntity<UserApprovalDto> changeRole(@PathVariable Long id,
+                                                      @RequestParam String role,
+                                                      @RequestHeader("X-Admin-Uid") String adminUid) {
+        return service.changeRole(id, role, adminUid)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id,
+                                           @RequestHeader("X-Admin-Uid") String adminUid) {
+        if (service.deleteUser(id, adminUid)) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+    }
 }
