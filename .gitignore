@@ -1,0 +1,37 @@
+### Java / Maven ###
+target/
+*.jar
+*.war
+*.ear
+
+### Environment ###
+.env
+
+### OS ###
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+### Node ###
+node_modules/
+
+### IDEs ###
+.idea/
+*.iml
+.vscode/
+
+### Logs ###
+*.log
+
+### OpenCode / Agents ###
+.agents/
+skills-lock.json
+
+### Playwright ###
+.playwright-mcp/
+
+### Screenshots / Temp ###
+*.png
+dashboard-snapshot.md
+layout-snapshot.txt
