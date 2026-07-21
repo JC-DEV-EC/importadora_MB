@@ -1,15 +1,15 @@
 package com.importadora.mb.service;
 
-import com.importadora.mb.domain.UserApproval;
-import com.importadora.mb.domain.UserApprovalRepository;
+import com.importadora.mb.domain.UsuarioMb;
+import com.importadora.mb.domain.UsuarioMbRepository;
 import com.importadora.mb.web.RegisterRequest;
-import com.importadora.mb.web.UserApprovalDto;
+import com.importadora.mb.web.UsuarioDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,110 +18,89 @@ public class UserApprovalService {
 
     private static final Logger log = LoggerFactory.getLogger(UserApprovalService.class);
 
-    private final UserApprovalRepository repository;
+    private final UsuarioMbRepository repository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserApprovalService(UserApprovalRepository repository) {
+    public UserApprovalService(UsuarioMbRepository repository, PasswordEncoder passwordEncoder) {
         this.repository = repository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
-    public UserApprovalDto register(RegisterRequest request) {
-        // Check if already registered
-        Optional<UserApproval> existing = repository.findByFirebaseUid(request.firebaseUid());
-        if (existing.isPresent()) {
-            return UserApprovalDto.fromEntity(existing.get());
+    public UsuarioDto register(RegisterRequest request) {
+        if (repository.existsByEmail(request.email())) {
+            throw new IllegalArgumentException("El email ya está registrado");
         }
-
-        UserApproval entity = new UserApproval();
-        entity.setFirebaseUid(request.firebaseUid());
-        entity.setEmail(request.email());
-        entity.setNombre(request.nombre());
-        entity.setStatus("PENDING");
-        entity.setRole("USER");
-
-        UserApproval saved = repository.save(entity);
-        log.info("Registered user firebaseUid={} email={}", saved.getFirebaseUid(), saved.getEmail());
-        return UserApprovalDto.fromEntity(saved);
+        String encoded = passwordEncoder.encode(request.password());
+        UsuarioMb entity = new UsuarioMb(request.email(), encoded, request.nombre(), "AGENT");
+        UsuarioMb saved = repository.save(entity);
+        log.info("Registered user email={} nombre={}", saved.getEmail(), saved.getNombre());
+        return UsuarioDto.fromEntity(saved);
     }
 
-    public Optional<UserApprovalDto> getStatus(String firebaseUid) {
-        return repository.findByFirebaseUid(firebaseUid)
-                .map(UserApprovalDto::fromEntity);
+    public Optional<UsuarioDto> getStatus(String email) {
+        return repository.findByEmail(email).map(UsuarioDto::fromEntity);
     }
 
-    public List<UserApprovalDto> getPending() {
-        return repository.findByStatus("PENDING").stream()
-                .map(UserApprovalDto::fromEntity)
-                .toList();
-    }
-
-    @Transactional
-    public Optional<UserApprovalDto> approve(Long id, String adminUid) {
-        // Verify admin
-        Optional<UserApproval> admin = repository.findByFirebaseUid(adminUid);
-        if (admin.isEmpty() || !"ADMIN".equals(admin.get().getRole())) {
-            return Optional.empty();
-        }
-
-        return repository.findById(id).map(user -> {
-            user.setStatus("APPROVED");
-            user.setApprovedBy(adminUid);
-            user.setApprovedAt(OffsetDateTime.now());
-            UserApproval saved = repository.save(user);
-            log.info("Approved user id={} by admin={}", id, adminUid);
-            return UserApprovalDto.fromEntity(saved);
-        });
-    }
-
-    @Transactional
-    public Optional<UserApprovalDto> reject(Long id, String adminUid) {
-        Optional<UserApproval> admin = repository.findByFirebaseUid(adminUid);
-        if (admin.isEmpty() || !"ADMIN".equals(admin.get().getRole())) {
-            return Optional.empty();
-        }
-
-        return repository.findById(id).map(user -> {
-            user.setStatus("REJECTED");
-            user.setApprovedBy(adminUid);
-            user.setApprovedAt(OffsetDateTime.now());
-            UserApproval saved = repository.save(user);
-            log.info("Rejected user id={} by admin={}", id, adminUid);
-            return UserApprovalDto.fromEntity(saved);
-        });
-    }
-
-    public List<UserApprovalDto> getAllUsers(String adminUid) {
-        if (!isAdmin(adminUid)) return List.of();
+    public List<UsuarioDto> getPending() {
         return repository.findAll().stream()
-                .map(UserApprovalDto::fromEntity)
+                .filter(u -> "INACTIVO".equals(u.getEstado()))
+                .map(UsuarioDto::fromEntity)
                 .toList();
     }
 
     @Transactional
-    public Optional<UserApprovalDto> changeRole(Long id, String newRole, String adminUid) {
-        if (!isAdmin(adminUid)) return Optional.empty();
+    public Optional<UsuarioDto> approve(Long id, String adminEmail) {
+        if (!isAdmin(adminEmail)) return Optional.empty();
         return repository.findById(id).map(user -> {
-            user.setRole(newRole);
-            UserApproval saved = repository.save(user);
-            log.info("Changed role of user id={} to {} by admin={}", id, newRole, adminUid);
-            return UserApprovalDto.fromEntity(saved);
+            user.setEstado("ACTIVO");
+            UsuarioMb saved = repository.save(user);
+            log.info("Approved user id={} by admin={}", id, adminEmail);
+            return UsuarioDto.fromEntity(saved);
         });
     }
 
     @Transactional
-    public boolean deleteUser(Long id, String adminUid) {
-        if (!isAdmin(adminUid)) return false;
+    public Optional<UsuarioDto> reject(Long id, String adminEmail) {
+        if (!isAdmin(adminEmail)) return Optional.empty();
+        return repository.findById(id).map(user -> {
+            user.setEstado("INACTIVO");
+            UsuarioMb saved = repository.save(user);
+            log.info("Rejected user id={} by admin={}", id, adminEmail);
+            return UsuarioDto.fromEntity(saved);
+        });
+    }
+
+    public List<UsuarioDto> getAllUsers(String adminEmail) {
+        if (!isAdmin(adminEmail)) return List.of();
+        return repository.findAll().stream().map(UsuarioDto::fromEntity).toList();
+    }
+
+    @Transactional
+    public Optional<UsuarioDto> changeRole(Long id, String newRole, String adminEmail) {
+        if (!isAdmin(adminEmail)) return Optional.empty();
+        return repository.findById(id).map(user -> {
+            user.setRol(newRole);
+            UsuarioMb saved = repository.save(user);
+            log.info("Changed role of user id={} to {} by admin={}", id, newRole, adminEmail);
+            return UsuarioDto.fromEntity(saved);
+        });
+    }
+
+    @Transactional
+    public boolean deleteUser(Long id, String adminEmail) {
+        if (!isAdmin(adminEmail)) return false;
         if (repository.existsById(id)) {
             repository.deleteById(id);
-            log.info("Deleted user id={} by admin={}", id, adminUid);
+            log.info("Deleted user id={} by admin={}", id, adminEmail);
             return true;
         }
         return false;
     }
 
-    private boolean isAdmin(String uid) {
-        return repository.findByFirebaseUid(uid)
-                .map(u -> "ADMIN".equals(u.getRole()))
+    private boolean isAdmin(String email) {
+        return repository.findByEmail(email)
+                .map(u -> "ADMIN".equals(u.getRol()))
                 .orElse(false);
     }
 }

@@ -18,58 +18,52 @@ public class UserApprovalController {
         this.service = service;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<UserApprovalDto> register(@Valid @RequestBody RegisterRequest request) {
-        UserApprovalDto dto = service.register(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
-    }
-
-    @GetMapping("/status/{firebaseUid}")
-    public ResponseEntity<UserApprovalDto> getStatus(@PathVariable String firebaseUid) {
-        return service.getStatus(firebaseUid)
+    @GetMapping("/status/{email}")
+    public ResponseEntity<UsuarioDto> getStatus(@PathVariable String email) {
+        return service.getStatus(email)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/pending")
-    public List<UserApprovalDto> getPending(@RequestHeader("X-Admin-Uid") String adminUid) {
+    public List<UsuarioDto> getPending(@RequestHeader("X-Admin-Email") String adminEmail) {
         return service.getPending();
     }
 
     @PutMapping("/approve/{id}")
-    public ResponseEntity<UserApprovalDto> approve(@PathVariable Long id,
-                                                    @RequestHeader("X-Admin-Uid") String adminUid) {
-        return service.approve(id, adminUid)
+    public ResponseEntity<UsuarioDto> approve(@PathVariable Long id,
+                                               @RequestHeader("X-Admin-Email") String adminEmail) {
+        return service.approve(id, adminEmail)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
     }
 
     @PutMapping("/reject/{id}")
-    public ResponseEntity<UserApprovalDto> reject(@PathVariable Long id,
-                                                   @RequestHeader("X-Admin-Uid") String adminUid) {
-        return service.reject(id, adminUid)
+    public ResponseEntity<UsuarioDto> reject(@PathVariable Long id,
+                                              @RequestHeader("X-Admin-Email") String adminEmail) {
+        return service.reject(id, adminEmail)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
     }
 
     @GetMapping("/users")
-    public List<UserApprovalDto> getAllUsers(@RequestHeader("X-Admin-Uid") String adminUid) {
-        return service.getAllUsers(adminUid);
+    public List<UsuarioDto> getAllUsers(@RequestHeader("X-Admin-Email") String adminEmail) {
+        return service.getAllUsers(adminEmail);
     }
 
     @PutMapping("/users/{id}/role")
-    public ResponseEntity<UserApprovalDto> changeRole(@PathVariable Long id,
-                                                      @RequestParam String role,
-                                                      @RequestHeader("X-Admin-Uid") String adminUid) {
-        return service.changeRole(id, role, adminUid)
+    public ResponseEntity<UsuarioDto> changeRole(@PathVariable Long id,
+                                                  @RequestParam String role,
+                                                  @RequestHeader("X-Admin-Email") String adminEmail) {
+        return service.changeRole(id, role, adminEmail)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.FORBIDDEN).build());
     }
 
     @DeleteMapping("/users/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id,
-                                           @RequestHeader("X-Admin-Uid") String adminUid) {
-        if (service.deleteUser(id, adminUid)) {
+                                           @RequestHeader("X-Admin-Email") String adminEmail) {
+        if (service.deleteUser(id, adminEmail)) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
