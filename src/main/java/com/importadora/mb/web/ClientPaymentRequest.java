@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 
 public record ClientPaymentRequest(
         @NotNull BigDecimal amount,
+        String description,
         String reference
 ) {
 }
