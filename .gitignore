@@ -35,3 +35,6 @@ skills-lock.json
 *.png
 dashboard-snapshot.md
 layout-snapshot.txt
+
+### Build ###
+META-INF/
