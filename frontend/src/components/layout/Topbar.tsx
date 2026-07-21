@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Menu, Search, Bell, LogOut, CheckCircle, AlertCircle, Info, AlertTriangle, X, Trash2, Sun, Moon } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
@@ -42,6 +42,8 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   const notifRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const hideSearch = ["/cobranza", "/clients", "/auditoria"].some((p) => location.pathname === p || location.pathname.startsWith(p + "/"));
 
   useEffect(() => {
     const tick = () => {
@@ -102,41 +104,45 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         {clock}
       </div>
 
-      <div className="flex-1 flex justify-center">
-        <div className="relative w-full max-w-md" ref={searchRef}>
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-          <input
-            type="search"
-            placeholder="Buscar clientes..."
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit()}
-            className="w-full rounded-lg border border-default bg-surface py-2 pl-9 pr-3 text-sm text-primary placeholder-muted transition-colors focus:border-mb-400 focus:bg-card focus:outline-none focus:ring-2 focus:ring-mb-400/20"
-          />
-          {showSuggestions && suggestions.length > 0 && (
-            <div className="absolute top-full mt-1 w-full rounded-xl border border-default bg-card shadow-xl animate-scale-in overflow-hidden">
-              {suggestions.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => handleSelect(c.id)}
-                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover-bg border-b border-light last:border-b-0"
-                >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-mb-100 text-xs font-semibold text-mb-700">
-                    {c.fullName.charAt(0)}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-primary truncate">{c.fullName}</p>
-                    <p className="text-xs text-muted truncate">{c.city ?? "Sin ciudad"}</p>
-                  </div>
-                  <span className="text-xs font-mono text-secondary shrink-0">
-                    {c.debt?.toFixed(2)} USD
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
+      {hideSearch && <div className="flex-1" />}
+
+      {!hideSearch && (
+        <div className="flex-1 flex justify-center">
+          <div className="relative w-full max-w-md" ref={searchRef}>
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+            <input
+              type="search"
+              placeholder="Buscar clientes..."
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit()}
+              className="w-full rounded-lg border border-default bg-surface py-2 pl-9 pr-3 text-sm text-primary placeholder-muted transition-colors focus:border-mb-400 focus:bg-card focus:outline-none focus:ring-2 focus:ring-mb-400/20"
+            />
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute top-full mt-1 w-full rounded-xl border border-default bg-card shadow-xl overflow-hidden">
+                {suggestions.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => handleSelect(c.id)}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover-bg border-b border-light last:border-b-0"
+                  >
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-mb-100 text-xs font-semibold text-mb-700">
+                      {c.fullName.charAt(0)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-primary truncate">{c.fullName}</p>
+                      <p className="text-xs text-muted truncate">{c.city ?? "Sin ciudad"}</p>
+                    </div>
+                    <span className="text-xs font-mono text-secondary shrink-0">
+                      {c.debt?.toFixed(2)} USD
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="flex items-center gap-1 sm:gap-2 shrink-0" ref={notifRef}>
         <button
@@ -160,7 +166,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
             )}
           </button>
           {notifOpen && (
-            <div className="absolute right-0 mt-2 w-80 rounded-xl border border-default bg-card shadow-xl animate-scale-in overflow-hidden">
+            <div className="absolute right-0 mt-2 w-80 rounded-xl border border-default bg-card shadow-xl overflow-hidden">
               <div className="flex items-center justify-between border-b border-light px-4 py-3">
                 <p className="text-sm font-semibold text-primary">Notificaciones</p>
                 {history.length > 0 && (

@@ -29,11 +29,13 @@ public class ClienteMbService {
     private final ClienteMbRepository repository;
     private final MovimientoMbService movimientoService;
     private final NotificacionMbService notificacionService;
+    private final AuditoriaMbService auditoriaService;
 
-    public ClienteMbService(ClienteMbRepository repository, MovimientoMbService movimientoService, NotificacionMbService notificacionService) {
+    public ClienteMbService(ClienteMbRepository repository, MovimientoMbService movimientoService, NotificacionMbService notificacionService, AuditoriaMbService auditoriaService) {
         this.repository = repository;
         this.movimientoService = movimientoService;
         this.notificacionService = notificacionService;
+        this.auditoriaService = auditoriaService;
     }
 
     public List<ClienteMbDto> findAll() {
@@ -72,6 +74,9 @@ public class ClienteMbService {
         entity.setLastName(request.lastName());
         entity.setCity(request.city());
         entity.setRegistrationDate(request.registrationDate());
+        entity.setPhone(request.phone());
+        entity.setEmail(request.email());
+        entity.setCedula(request.cedula());
 
         BigDecimal initialDebt = request.initialDebt() != null ? request.initialDebt() : BigDecimal.ZERO;
         entity.setDebt(initialDebt);
@@ -89,18 +94,23 @@ public class ClienteMbService {
         notificacionService.crear(usuarioId, "success",
             "Cliente \"" + nombreCompleto + "\" creado con éxito",
             saved.getId());
+        auditoriaService.registrar(usuarioId, "", "CREAR", "CLIENTE", saved.getId(),
+            "Cliente \"" + nombreCompleto + "\" creado. Deuda inicial: " + (request.initialDebt() != null ? request.initialDebt() : BigDecimal.ZERO));
 
         return ClienteMbDto.fromEntity(saved);
     }
 
     @Transactional
-    public Optional<ClienteMbDto> update(Long id, ClientUpdateRequest request) {
+    public Optional<ClienteMbDto> update(Long id, ClientUpdateRequest request, Long usuarioId) {
         return repository.findById(id)
                 .map(entity -> {
                     entity.setFirstName(request.firstName());
                     entity.setLastName(request.lastName());
                     entity.setCity(request.city());
                     entity.setRegistrationDate(request.registrationDate());
+                    entity.setPhone(request.phone());
+                    entity.setEmail(request.email());
+                    entity.setCedula(request.cedula());
                     if (request.discount() != null) {
                         entity.setDiscount(request.discount());
                     }
@@ -109,6 +119,8 @@ public class ClienteMbService {
                     log.info("Updated client id={} name={} {} city={} discount={} status={} totalAmount={}",
                             saved.getId(), saved.getFirstName(), saved.getLastName(), saved.getCity(),
                             saved.getDiscount(), saved.getStatus(), saved.getTotalAmount());
+                    auditoriaService.registrar(usuarioId, "", "ACTUALIZAR", "CLIENTE", saved.getId(),
+                        "Cliente actualizado. Deuda=" + saved.getDebt() + " Saldo=" + saved.getTotalAmount());
                     return ClienteMbDto.fromEntity(saved);
                 });
     }
@@ -136,6 +148,8 @@ public class ClienteMbService {
                     notificacionService.crear(usuarioId, "warning",
                         "Cargo de $" + String.format("%.2f", request.amount()) + " a " + nombre + desc,
                         saved.getId());
+                    auditoriaService.registrar(usuarioId, "", "CARGO", "CLIENTE", saved.getId(),
+                        "Cargo de $" + String.format("%.2f", request.amount()) + " a " + nombre + desc);
 
                     return ClienteMbDto.fromEntity(saved);
                 });
@@ -171,6 +185,8 @@ public class ClienteMbService {
                     notificacionService.crear(usuarioId, "success",
                         "Pago de $" + String.format("%.2f", request.amount()) + " de " + nombre + desc,
                         saved.getId());
+                    auditoriaService.registrar(usuarioId, "", "PAGO", "CLIENTE", saved.getId(),
+                        "Pago de $" + String.format("%.2f", request.amount()) + " de " + nombre + desc);
 
                     return ClienteMbDto.fromEntity(saved);
                 });
@@ -204,9 +220,8 @@ public class ClienteMbService {
 
     public String exportCsv() {
         List<ClienteMb> clients = repository.findAll();
-        // BOM para que Excel detecte UTF-8 correctamente
         StringBuilder sb = new StringBuilder("\uFEFF");
-        sb.append("ID;Nombre;Apellido;Ciudad;Fecha de Registro;Deuda (USD);Pagado (USD);Saldo (USD);Descuento;Estado\n");
+        sb.append("ID;Nombre;Apellido;Ciudad;Fecha de Registro;Deuda (USD);Pagado (USD);Saldo (USD);Descuento;Estado;Teléfono;Email;Cédula\n");
         for (ClienteMb c : clients) {
             sb.append(c.getId()).append(';');
             sb.append(escapeCsv(c.getFirstName())).append(';');
@@ -217,7 +232,10 @@ public class ClienteMbService {
             sb.append(String.format("%.2f", nullSafe(c.getPayment()))).append(';');
             sb.append(String.format("%.2f", nullSafe(c.getTotalAmount()))).append(';');
             sb.append(Boolean.TRUE.equals(c.getDiscount()) ? "Sí" : "No").append(';');
-            sb.append("ACTIVE".equals(c.getStatus()) ? "Activo" : "Cancelado").append('\n');
+            sb.append("ACTIVE".equals(c.getStatus()) ? "Activo" : "Cancelado").append(';');
+            sb.append(escapeCsv(c.getPhone())).append(';');
+            sb.append(escapeCsv(c.getEmail())).append(';');
+            sb.append(escapeCsv(c.getCedula())).append('\n');
         }
         return sb.toString();
     }

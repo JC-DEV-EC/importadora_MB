@@ -12,6 +12,9 @@ public record ClientCreateRequest(
         String city,
         LocalDateTime registrationDate,
         BigDecimal initialDebt,
-        Boolean discount
+        Boolean discount,
+        String phone,
+        String email,
+        String cedula
 ) {
 }

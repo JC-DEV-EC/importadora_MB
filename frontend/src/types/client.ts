@@ -8,6 +8,9 @@ export interface ClienteMbDto {
   totalAmount: number;
   discount: boolean | null;
   status: string;
+  phone: string | null;
+  email: string | null;
+  cedula: string | null;
 }
 
 export interface ClientCreateRequest {
@@ -17,6 +20,9 @@ export interface ClientCreateRequest {
   registrationDate?: string;
   initialDebt?: number;
   discount?: boolean;
+  phone?: string;
+  email?: string;
+  cedula?: string;
 }
 
 export interface ClientUpdateRequest {
@@ -25,6 +31,9 @@ export interface ClientUpdateRequest {
   city?: string;
   registrationDate?: string;
   discount?: boolean;
+  phone?: string;
+  email?: string;
+  cedula?: string;
 }
 
 export interface ClientChargeRequest {

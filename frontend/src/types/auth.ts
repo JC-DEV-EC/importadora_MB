@@ -10,15 +10,6 @@ export interface LoginResponse {
   rol: string;
 }
 
-export interface UsuarioDto {
-  id: number;
-  email: string;
-  nombre: string;
-  rol: string;
-  estado: string;
-  createdAt: string | null;
-}
-
 export interface AuthUser {
   token: string;
   email: string;

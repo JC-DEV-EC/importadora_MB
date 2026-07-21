@@ -20,7 +20,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/usuarios")
 public class UsuarioController {
 
     private final UsuarioMbRepository usuarioRepo;
@@ -32,6 +32,7 @@ public class UsuarioController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UsuarioDto> getAll() {
         return usuarioRepo.findAll().stream().map(UsuarioDto::fromEntity).toList();
     }
@@ -47,8 +48,8 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(UsuarioDto.fromEntity(usuario));
     }
 
-    @PutMapping("/{id}/role")
-    public ResponseEntity<UsuarioDto> changeRole(@PathVariable Long id, @RequestParam String rol) {
+    @PutMapping("/{id}/rol")
+    public ResponseEntity<UsuarioDto> changeRol(@PathVariable Long id, @RequestParam String rol) {
         return usuarioRepo.findById(id)
                 .map(u -> {
                     u.setRol(rol);
@@ -58,22 +59,11 @@ public class UsuarioController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}/deactivate")
-    public ResponseEntity<UsuarioDto> deactivate(@PathVariable Long id) {
+    @PutMapping("/{id}/estado")
+    public ResponseEntity<UsuarioDto> changeEstado(@PathVariable Long id, @RequestParam String estado) {
         return usuarioRepo.findById(id)
                 .map(u -> {
-                    u.setEstado("INACTIVO");
-                    usuarioRepo.save(u);
-                    return ResponseEntity.ok(UsuarioDto.fromEntity(u));
-                })
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @PutMapping("/{id}/activate")
-    public ResponseEntity<UsuarioDto> activate(@PathVariable Long id) {
-        return usuarioRepo.findById(id)
-                .map(u -> {
-                    u.setEstado("ACTIVO");
+                    u.setEstado(estado);
                     usuarioRepo.save(u);
                     return ResponseEntity.ok(UsuarioDto.fromEntity(u));
                 })

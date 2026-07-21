@@ -7,6 +7,14 @@ import { ClientList } from "./pages/ClientList";
 import { ClientDetail } from "./pages/ClientDetail";
 import { ClientForm } from "./pages/ClientForm";
 import { Login } from "./pages/Login";
+import { Cobranza } from "./pages/Cobranza";
+import { Calendario } from "./pages/Calendario";
+import { Notificaciones } from "./pages/Notificaciones";
+import { Reportes } from "./pages/Reportes";
+import { AdminUsuarios } from "./pages/AdminUsuarios";
+import { Auditoria } from "./pages/Auditoria";
+import { Configuracion } from "./pages/Configuracion";
+import { Plantillas } from "./pages/Plantillas";
 import { ToastProvider } from "./components/ui/Toast";
 import type { ReactNode } from "react";
 
@@ -28,6 +36,14 @@ function AppRoutes() {
         <Route path="/clients/new" element={<ClientForm />} />
         <Route path="/clients/:id" element={<ClientDetail />} />
         <Route path="/clients/:id/edit" element={<ClientForm />} />
+        <Route path="/notificaciones" element={<Notificaciones />} />
+        <Route path="/plantillas" element={<Plantillas />} />
+        <Route path="/calendario" element={<Calendario />} />
+        <Route path="/cobranza" element={<Cobranza />} />
+        <Route path="/reportes" element={<Reportes />} />
+        <Route path="/admin/usuarios" element={<AdminUsuarios />} />
+        <Route path="/auditoria" element={<Auditoria />} />
+        <Route path="/configuracion" element={<Configuracion />} />
       </Route>
     </Routes>
   );

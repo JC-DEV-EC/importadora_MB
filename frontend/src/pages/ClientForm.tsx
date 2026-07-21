@@ -22,6 +22,9 @@ export function ClientForm() {
   const [city, setCity] = useState("");
   const [initialDebt, setInitialDebt] = useState("");
   const [discount, setDiscount] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [cedula, setCedula] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -31,6 +34,9 @@ export function ClientForm() {
       setLastName(parts.slice(1).join(" ") ?? "");
       setCity(existing.city ?? "");
       setDiscount(existing.discount ?? false);
+      setPhone(existing.phone ?? "");
+      setEmail(existing.email ?? "");
+      setCedula(existing.cedula ?? "");
     }
   }, [existing]);
 
@@ -46,12 +52,12 @@ export function ClientForm() {
     if (!validate()) return;
     if (isEdit && clientId) {
       updateMutation.mutate(
-        { id: clientId, data: { firstName: firstName.trim(), lastName: lastName.trim(), city: city.trim() || undefined, discount } },
+        { id: clientId, data: { firstName: firstName.trim(), lastName: lastName.trim(), city: city.trim() || undefined, discount, phone: phone.trim() || undefined, email: email.trim() || undefined, cedula: cedula.trim() || undefined } },
         { onSuccess: () => { navigate(`/clients/${clientId}`); toast("success", "Cliente actualizado correctamente"); }, onError: () => toast("error", "Error al actualizar el cliente") }
       );
     } else {
       createMutation.mutate(
-        { firstName: firstName.trim(), lastName: lastName.trim(), city: city.trim() || undefined, initialDebt: initialDebt ? parseFloat(initialDebt) : undefined, discount: discount || undefined },
+        { firstName: firstName.trim(), lastName: lastName.trim(), city: city.trim() || undefined, initialDebt: initialDebt ? parseFloat(initialDebt) : undefined, discount: discount || undefined, phone: phone.trim() || undefined, email: email.trim() || undefined, cedula: cedula.trim() || undefined },
         { onSuccess: (data) => { navigate(`/clients/${data.id}`); toast("success", "Cliente creado correctamente", data.id); }, onError: () => toast("error", "Error al crear el cliente") }
       );
     }
@@ -91,6 +97,9 @@ export function ClientForm() {
             <Input id="lastName" label="Apellido" placeholder="Ej: Pérez" value={lastName} onChange={(e) => setLastName(e.target.value)} error={errors.lastName} />
           </div>
           <Input id="city" label="Ciudad" placeholder="Ej: Santa Cruz" value={city} onChange={(e) => setCity(e.target.value)} />
+          <Input id="phone" label="Teléfono" placeholder="Ej: 70012345" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <Input id="email" label="Correo Electrónico" type="email" placeholder="Ej: cliente@correo.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Input id="cedula" label="Cédula / Identificación" placeholder="Ej: 1234567" value={cedula} onChange={(e) => setCedula(e.target.value)} />
           {!isEdit && (
             <Input id="initialDebt" label="Deuda Inicial" type="number" step="0.01" min="0" placeholder="0.00" value={initialDebt} onChange={(e) => setInitialDebt(e.target.value)} hint="Deja en 0 si no tiene deuda inicial" />
           )}

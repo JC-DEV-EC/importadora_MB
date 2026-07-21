@@ -152,6 +152,9 @@ export function ClientDetail() {
             {[
               ["Nombre completo", client.fullName],
               ["Ciudad", client.city ?? "—"],
+              ["Teléfono", client.phone ?? "—"],
+              ["Correo", client.email ?? "—"],
+              ["Cédula", client.cedula ?? "—"],
               ["Registro", formatDate(client.registrationDate)],
               ["Descuento", client.discount ? "Sí (10%)" : "No"],
             ].map(([label, value]) => (

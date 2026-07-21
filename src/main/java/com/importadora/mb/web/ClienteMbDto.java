@@ -13,7 +13,10 @@ public record ClienteMbDto(
         BigDecimal payment,
         BigDecimal totalAmount,
         Boolean discount,
-        String status
+        String status,
+        String phone,
+        String email,
+        String cedula
 ) {
     public static ClienteMbDto fromEntity(ClienteMb c) {
         String name = (c.getFirstName() + " " + c.getLastName()).trim();
@@ -27,7 +30,10 @@ public record ClienteMbDto(
                 c.getPayment(),
                 c.getTotalAmount(),
                 c.getDiscount(),
-                c.getStatus()
+                c.getStatus(),
+                c.getPhone(),
+                c.getEmail(),
+                c.getCedula()
         );
     }
 }

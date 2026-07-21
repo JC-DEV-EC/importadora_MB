@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
+
 public interface ClienteMbRepository extends JpaRepository<ClienteMb, Long> {
 
     @Query("""
@@ -17,4 +19,17 @@ public interface ClienteMbRepository extends JpaRepository<ClienteMb, Long> {
     Page<ClienteMb> search(@Param("q") String q, Pageable pageable);
 
     Page<ClienteMb> findAll(Pageable pageable);
+
+    Page<ClienteMb> findByTotalAmountGreaterThanOrderByTotalAmountDesc(BigDecimal totalAmount, Pageable pageable);
+
+    long countByStatus(String status);
+
+    @Query("SELECT COALESCE(SUM(c.debt), 0) FROM ClienteMb c")
+    BigDecimal sumDebt();
+
+    @Query("SELECT COALESCE(SUM(c.payment), 0) FROM ClienteMb c")
+    BigDecimal sumPayment();
+
+    @Query("SELECT COALESCE(SUM(c.totalAmount), 0) FROM ClienteMb c")
+    BigDecimal sumTotalAmount();
 }

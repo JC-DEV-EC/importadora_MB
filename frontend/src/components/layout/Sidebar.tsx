@@ -2,14 +2,38 @@ import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
-  UserPlus,
+  AlertTriangle,
+  Calendar,
+  Bell,
+  BarChart3,
+  FileText,
+  Shield,
+  ClipboardList,
+  Settings,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 
-const mainNav = [
-  { to: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/clients", icon: Users, label: "Clientes" },
-  { to: "/clients/new", icon: UserPlus, label: "Nuevo Cliente" },
+const navGroups = [
+  {
+    label: "Menú",
+    items: [
+      { to: "/", icon: LayoutDashboard, label: "Dashboard", end: true },
+      { to: "/clients", icon: Users, label: "Clientes" },
+      { to: "/cobranza", icon: AlertTriangle, label: "Cobranza" },
+      { to: "/calendario", icon: Calendar, label: "Calendario" },
+      { to: "/notificaciones", icon: Bell, label: "Notificaciones" },
+      { to: "/reportes", icon: BarChart3, label: "Reportes" },
+    ],
+  },
+  {
+    label: "Administración",
+    items: [
+      { to: "/plantillas", icon: FileText, label: "Plantillas" },
+      { to: "/admin/usuarios", icon: Shield, label: "Usuarios" },
+      { to: "/auditoria", icon: ClipboardList, label: "Auditoría" },
+      { to: "/configuracion", icon: Settings, label: "Configuración" },
+    ],
+  },
 ];
 
 function HandDrawnLines() {
@@ -187,34 +211,42 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto scrollbar-thin px-3 py-5">
-          <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-widest text-white/30">
-            Menú
-          </p>
-          <nav className="space-y-0.5">
-            {mainNav.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.to === "/"}
-                onClick={onClose}
-                className={({ isActive }) =>
-                  cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 relative overflow-hidden",
-                    isActive
-                      ? "bg-white/10 text-white shadow-sm before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-r before:bg-accent-500 before:shadow-lg before:shadow-accent-500/50"
-                      : "text-white/60 hover:bg-white/5 hover:text-white/80"
-                  )
-                }
-              >
-                <item.icon className="h-4.5 w-4.5 shrink-0" />
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
+        <div className="flex-1 overflow-y-auto px-3 py-5" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+          {navGroups.map((group, gi) => (
+            <div key={group.label} className={gi > 0 ? "mt-6" : ""}>
+              <div className="mb-2 flex items-center gap-2 px-3">
+                {gi > 0 && <div className="flex-1 border-t border-white/10" />}
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-white/30 shrink-0">
+                  {group.label}
+                </p>
+                {gi > 0 && <div className="flex-1 border-t border-white/10" />}
+              </div>
+              <nav className="space-y-0.5">
+                {group.items.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.end ?? false}
+                    onClick={onClose}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 relative overflow-hidden",
+                        isActive
+                          ? "bg-white/10 text-white shadow-sm before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-r before:bg-accent-500 before:shadow-lg before:shadow-accent-500/50"
+                          : "text-white/60 hover:bg-white/5 hover:text-white/80"
+                      )
+                    }
+                  >
+                    <item.icon className="h-4.5 w-4.5 shrink-0" />
+                    {item.label}
+                  </NavLink>
+                ))}
+              </nav>
+            </div>
+          ))}
         </div>
 
-        <div className="mt-auto">
+        <div>
           <HandDrawnLines />
           <AnimatedCharacter />
         </div>

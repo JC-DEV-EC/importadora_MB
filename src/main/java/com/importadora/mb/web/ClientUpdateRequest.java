@@ -11,6 +11,9 @@ public record ClientUpdateRequest(
         @NotBlank String lastName,
         String city,
         LocalDateTime registrationDate,
-        Boolean discount
+        Boolean discount,
+        String phone,
+        String email,
+        String cedula
 ) {
 }

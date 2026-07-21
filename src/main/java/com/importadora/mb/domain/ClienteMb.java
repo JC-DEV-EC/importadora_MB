@@ -46,6 +46,15 @@ public class ClienteMb {
     @Column(name = "discount")
     private Boolean discount;
 
+    @Column(name = "phone", length = 20)
+    private String phone;
+
+    @Column(name = "email", length = 100)
+    private String email;
+
+    @Column(name = "cedula", length = 20)
+    private String cedula;
+
     public Long getId() {
         return id;
     }
@@ -124,5 +133,29 @@ public class ClienteMb {
 
     public void setDiscount(Boolean discount) {
         this.discount = discount;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getCedula() {
+        return cedula;
+    }
+
+    public void setCedula(String cedula) {
+        this.cedula = cedula;
     }
 }

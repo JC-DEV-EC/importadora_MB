@@ -53,8 +53,9 @@ public class ClienteMbController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ClienteMbDto> update(@PathVariable Long id,
-                                               @Valid @RequestBody ClientUpdateRequest request) {
-        return service.update(id, request)
+                                               @Valid @RequestBody ClientUpdateRequest request,
+                                               Principal principal) {
+        return service.update(id, request, obtenerUsuarioId(principal))
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
