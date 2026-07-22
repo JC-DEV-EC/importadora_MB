@@ -85,7 +85,7 @@ export function ClientDetail() {
         <Button variant="ghost" size="sm" onClick={() => navigate("/clients")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-mb-100 text-sm font-bold text-mb-700">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-sm font-bold text-secondary">
           {client.fullName.charAt(0)}
         </div>
         <div className="flex-1 min-w-0">
@@ -109,19 +109,19 @@ export function ClientDetail() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">Deuda Total</p>
+          <p className="text-[11px] font-semibold text-muted">Deuda Total</p>
           <p className="mt-1.5 text-2xl font-bold  text-primary">{formatCurrency(client.debt)}</p>
         </Card>
         <Card>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">Total Pagado</p>
+          <p className="text-[11px] font-semibold text-muted">Total Pagado</p>
           <p className="mt-1.5 text-2xl font-bold  text-emerald-600">{formatCurrency(client.payment)}</p>
         </Card>
         <Card>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">Saldo Pendiente</p>
+          <p className="text-[11px] font-semibold text-muted">Saldo Pendiente</p>
           <p className="mt-1.5 text-2xl font-bold  text-primary">{formatCurrency(client.totalAmount)}</p>
         </Card>
         <Card>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">Descuento</p>
+          <p className="text-[11px] font-semibold text-muted">Descuento</p>
           <p className="mt-1.5 text-2xl font-bold  text-primary">
             {client.discount ? "10%" : "0%"}
           </p>

@@ -69,7 +69,7 @@ export function ClientList() {
       sortable: true,
       render: (c) => (
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-mb-100 text-xs font-semibold text-mb-700">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface text-xs font-semibold text-secondary">
             {c.fullName.charAt(0)}
           </div>
           <div className="min-w-0">

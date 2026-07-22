@@ -72,12 +72,12 @@ export function Cobranza() {
       header: "Nombre",
       render: (c) => (
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-rose-100 text-xs font-bold text-rose-700">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface text-xs font-bold text-secondary">
             {c.fullName.charAt(0)}
           </div>
           <div className="min-w-0">
             <p className="font-medium text-primary">{c.fullName}</p>
-            {c.email && <p className="text-xs text-gray-500">{c.email}</p>}
+            {c.email && <p className="text-xs text-muted">{c.email}</p>}
           </div>
         </div>
       ),
@@ -85,25 +85,25 @@ export function Cobranza() {
     {
       key: "city",
       header: "Ciudad",
-      render: (c) => <span className="text-gray-500 text-sm">{c.city || "—"}</span>,
+      render: (c) => <span className="text-muted text-sm">{c.city || "—"}</span>,
       hideOnMobile: true,
     },
     {
       key: "telefono",
       header: "Teléfono",
-      render: (c) => <span className="text-gray-500 text-sm">{c.telefono || "—"}</span>,
+      render: (c) => <span className="text-muted text-sm">{c.telefono || "—"}</span>,
       hideOnMobile: true,
     },
     {
       key: "debt",
       header: "Deuda",
-      render: (c) => <span className="font-mono text-sm font-medium text-gray-900">{formatCurrency(c.debt)}</span>,
+      render: (c) => <span className="font-mono text-sm font-medium text-primary">{formatCurrency(c.debt)}</span>,
       className: "text-right",
     },
     {
       key: "payment",
       header: "Pagado",
-      render: (c) => <span className="font-mono text-sm text-emerald-600">{formatCurrency(c.payment)}</span>,
+      render: (c) => <span className="font-mono text-sm text-secondary">{formatCurrency(c.payment)}</span>,
       className: "text-right hidden lg:table-cell",
       hideOnMobile: true,
     },
@@ -111,7 +111,7 @@ export function Cobranza() {
       key: "totalAmount",
       header: "Saldo",
       render: (c) => (
-        <span className="font-mono text-sm font-medium text-red-600">{formatCurrency(c.totalAmount)}</span>
+        <span className="font-mono text-sm font-semibold text-primary">{formatCurrency(c.totalAmount)}</span>
       ),
       className: "text-right",
     },
@@ -120,13 +120,13 @@ export function Cobranza() {
       header: "",
       render: (c) => (
         <div className="flex items-center justify-end gap-1">
-          <button onClick={() => navigate(`/clients/${c.id}`)} className="rounded p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50" title="Pagar">
+          <button onClick={() => navigate(`/clients/${c.id}`)} className="rounded p-1.5 text-muted hover:text-secondary hover:bg-surface" title="Pagar">
             <DollarSign className="h-4 w-4" />
           </button>
-          <button onClick={() => window.open(`https://wa.me/${(c.telefono ?? "").replace(/\D/g, "")}`, "_blank")} className="rounded p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50" title="WhatsApp">
+          <button onClick={() => window.open(`https://wa.me/${(c.telefono ?? "").replace(/\D/g, "")}`, "_blank")} className="rounded p-1.5 text-muted hover:text-secondary hover:bg-surface" title="WhatsApp">
             <Phone className="h-4 w-4" />
           </button>
-          <button onClick={() => window.location.href = `mailto:${c.email}`} className="rounded p-1.5 text-gray-400 hover:text-sky-600 hover:bg-sky-50" title="Email">
+          <button onClick={() => window.location.href = `mailto:${c.email}`} className="rounded p-1.5 text-muted hover:text-secondary hover:bg-surface" title="Email">
             <Mail className="h-4 w-4" />
           </button>
         </div>
@@ -138,14 +138,14 @@ export function Cobranza() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-gray-900">Cobranza</h1>
-        <p className="text-sm text-gray-500">Clientes con saldo pendiente</p>
+        <h1 className="text-xl font-bold text-primary">Cobranza</h1>
+        <p className="text-sm text-muted">Clientes con saldo pendiente</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-default bg-card p-5">
           <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface text-red-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface text-secondary">
               <Users className="h-5 w-5" />
             </div>
             <div>
@@ -156,7 +156,7 @@ export function Cobranza() {
         </div>
         <div className="rounded-xl border border-default bg-card p-5">
           <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface text-amber-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface text-secondary">
               <DollarSign className="h-5 w-5" />
             </div>
             <div>
@@ -167,7 +167,7 @@ export function Cobranza() {
         </div>
         <div className="rounded-xl border border-default bg-card p-5">
           <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface text-emerald-600">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface text-secondary">
               <DollarSign className="h-5 w-5" />
             </div>
             <div>
@@ -193,7 +193,7 @@ export function Cobranza() {
         )}
       </div>
 
-      <div className="border border-gray-200 rounded-lg bg-white overflow-hidden">
+      <div className="border border-default rounded-lg bg-card overflow-hidden">
         <DataTable
           columns={columns}
           data={data}
@@ -205,7 +205,7 @@ export function Cobranza() {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-500">Página {page + 1} de {totalPages}</p>
+          <p className="text-sm text-muted">Página {page + 1} de {totalPages}</p>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(page - 1)}>
               <ChevronLeft className="h-4 w-4" /> Anterior

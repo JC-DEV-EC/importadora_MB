@@ -98,9 +98,7 @@ export function Calendario() {
                         <button
                           key={i}
                           onClick={() => navigate(`/clients/${ev.clienteId}`)}
-                          className={`block w-full truncate rounded px-1 py-0.5 text-left text-[10px] font-medium transition-colors hover:opacity-80 ${
-                            ev.tipo === "CARGO" ? "bg-rose-50 text-rose-700" : "bg-emerald-50 text-emerald-700"
-                          }`}
+                          className="block w-full truncate rounded px-1 py-0.5 text-left text-[10px] font-medium bg-surface text-muted"
                         >
                           {ev.tipo === "CARGO" ? "+" : "-"}{ev.monto != null ? formatCurrency(ev.monto) : ""}
                         </button>
@@ -125,7 +123,7 @@ export function Calendario() {
           <div className="divide-y border-light max-h-64 overflow-y-auto">
             {events.map((ev, i) => (
               <div key={i} className="flex items-center gap-3 px-1 py-2.5 hover:bg-surface/50 rounded-lg transition-colors cursor-pointer" onClick={() => navigate(`/clients/${ev.clienteId}`)}>
-                <div className={`flex h-8 w-8 items-center justify-center rounded-full ${ev.tipo === "CARGO" ? "bg-rose-50 text-rose-600" : "bg-emerald-50 text-emerald-600"}`}>
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-secondary">
                   {ev.tipo === "CARGO" ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
                 </div>
                 <div className="flex-1 min-w-0">

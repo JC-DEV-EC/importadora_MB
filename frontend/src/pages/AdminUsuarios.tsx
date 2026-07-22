@@ -90,11 +90,11 @@ export function AdminUsuarios() {
             <table className="min-w-full divide-y border-light">
               <thead>
                 <tr className="bg-surface">
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-muted">Email</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-muted">Nombre</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-muted">Rol</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-muted">Estado</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-muted">Acciones</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted">Email</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted">Nombre</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted">Rol</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted">Estado</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y border-light">
