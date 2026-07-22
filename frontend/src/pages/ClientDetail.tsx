@@ -80,7 +80,7 @@ export function ClientDetail() {
   const movTotalPages = movPageData?.totalPages ?? 0;
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
+    <div className="space-y-6 ">
       <div className="flex flex-wrap items-center gap-3">
         <Button variant="ghost" size="sm" onClick={() => navigate("/clients")}>
           <ArrowLeft className="h-4 w-4" />

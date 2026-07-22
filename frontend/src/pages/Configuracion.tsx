@@ -65,7 +65,7 @@ export function Configuracion() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
+    <div className="space-y-6 ">
       <div>
         <h1 className="text-2xl font-bold  text-primary">Configuración del Sistema</h1>
         <p className="mt-1 text-sm text-secondary">Administra las variables de configuración</p>

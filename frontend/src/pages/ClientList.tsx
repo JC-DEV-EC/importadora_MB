@@ -138,7 +138,7 @@ export function ClientList() {
   const totalElements = pageData?.totalElements ?? 0;
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
+    <div className="space-y-6 ">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold  text-primary">Clientes</h1>

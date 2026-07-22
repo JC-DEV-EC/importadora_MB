@@ -72,7 +72,7 @@ export function ClientForm() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 animate-fade-in-up">
+    <div className="mx-auto max-w-2xl space-y-6 ">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="sm" onClick={() => navigate(isEdit ? `/clients/${clientId}` : "/clients")}>
           <ArrowLeft className="h-4 w-4" />

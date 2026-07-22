@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useMemo } from "react";
 import { useAllClients } from "../hooks/useClients";
 import { Card } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
@@ -7,7 +7,6 @@ import { useAuth } from "../context/AuthContext";
 import { Users, ArrowRight, Plus } from "lucide-react";
 import { formatCurrency, getStatusLabel } from "../lib/utils";
 import { useNavigate } from "react-router-dom";
-import { animate, stagger } from "animejs";
 
 import {
   BarChart,
@@ -17,51 +16,67 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
 
-const PIE_COLORS = ["#0f1f3a", "#cbd5e1"];
+const barData = [
+  { name: "Ene", deuda: 4200, pago: 2800 },
+  { name: "Feb", deuda: 3800, pago: 2400 },
+  { name: "Mar", deuda: 5100, pago: 3200 },
+  { name: "Abr", deuda: 4600, pago: 2900 },
+  { name: "May", deuda: 5400, pago: 3600 },
+  { name: "Jun", deuda: 4900, pago: 3100 },
+];
 
-function AnimatedNumber({ value, prefix = "", suffix = "", duration = 1200 }: { value: number; prefix?: string; suffix?: string; duration?: number }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obj = { val: 0 };
-    animate(obj, {
-      val: value,
-      duration,
-      easing: "easeOutExpo",
-      round: 1,
-      onUpdate: () => { el.textContent = prefix + obj.val.toLocaleString("en-US") + suffix; },
-    });
-  }, [value, prefix, suffix, duration]);
-  return <span ref={ref}>{prefix}0{suffix}</span>;
+function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="rounded-xl border border-default bg-card p-5">
+      <p className="text-xs text-muted">{label}</p>
+      <p className="mt-1 text-2xl font-bold text-primary">{value}</p>
+      {sub && <p className="text-xs text-muted mt-0.5">{sub}</p>}
+    </div>
+  );
 }
 
 export function Dashboard() {
   const { user } = useAuth();
   const { data: clients, isLoading } = useAllClients();
   const navigate = useNavigate();
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const [entered, setEntered] = useState(false);
 
-  useEffect(() => {
-    if (!clients || entered) return;
-    setEntered(true);
-    const cards = sectionRef.current?.querySelectorAll("[data-animate]");
-    if (cards?.length) {
-      animate(cards as NodeList, {
-        translateY: [24, 0],
-        opacity: [0, 1],
-        duration: 500,
-        delay: stagger(80),
-        easing: "easeOutQuart",
-      });
-    }
-  }, [clients, entered]);
+  const stats = useMemo(() => {
+    const list = clients ?? [];
+    const active = list.filter((c) => c.status === "ACTIVE");
+    const cancelled = list.filter((c) => c.status === "CANCELLED");
+    const withDiscount = list.filter((c) => c.discount);
+    const debt = list.reduce((s, c) => s + c.debt, 0);
+    const payment = list.reduce((s, c) => s + c.payment, 0);
+    const outstanding = list.reduce((s, c) => s + c.totalAmount, 0);
+    return {
+      total: list.length,
+      active: active.length,
+      cancelled: cancelled.length,
+      debt,
+      payment,
+      outstanding,
+      collectionRate: debt > 0 ? (payment / debt) * 100 : 0,
+      withDiscount: withDiscount.length,
+    };
+  }, [clients]);
+
+  const recentClients = useMemo(() =>
+    [...(clients ?? [])]
+      .sort((a, b) => {
+        const da = a.registrationDate ? new Date(a.registrationDate).getTime() : 0;
+        const db = b.registrationDate ? new Date(b.registrationDate).getTime() : 0;
+        return db - da;
+      })
+      .slice(0, 5),
+  [clients]);
+
+  const topDebtors = useMemo(() =>
+    [...(clients ?? [])]
+      .sort((a, b) => b.totalAmount - a.totalAmount)
+      .slice(0, 5),
+  [clients]);
 
   if (isLoading) {
     return (
@@ -71,68 +86,16 @@ export function Dashboard() {
     );
   }
 
-  const clientList = clients ?? [];
-  const active = clientList.filter((c) => c.status === "ACTIVE");
-  const cancelled = clientList.filter((c) => c.status === "CANCELLED");
-  const withDiscount = clientList.filter((c) => c.discount);
-
-  const stats = {
-    total: clientList.length,
-    active: active.length,
-    cancelled: cancelled.length,
-    debt: clientList.reduce((s, c) => s + c.debt, 0),
-    payment: clientList.reduce((s, c) => s + c.payment, 0),
-    outstanding: clientList.reduce((s, c) => s + c.totalAmount, 0),
-  };
-
-  const collectionRate = stats.debt > 0 ? (stats.payment / stats.debt) * 100 : 0;
-  const activeRatio = stats.total > 0 ? (stats.active / stats.total) * 100 : 0;
-
-  const recentClients = [...clientList]
-    .sort((a, b) => {
-      const da = a.registrationDate ? new Date(a.registrationDate).getTime() : 0;
-      const db = b.registrationDate ? new Date(b.registrationDate).getTime() : 0;
-      return db - da;
-    })
-    .slice(0, 5);
-
-  const topDebtors = [...clientList]
-    .sort((a, b) => b.totalAmount - a.totalAmount)
-    .slice(0, 5);
-
-  const barData = [
-    { name: "Ene", deuda: 4200, pago: 2800 },
-    { name: "Feb", deuda: 3800, pago: 2400 },
-    { name: "Mar", deuda: 5100, pago: 3200 },
-    { name: "Abr", deuda: 4600, pago: 2900 },
-    { name: "May", deuda: 5400, pago: 3600 },
-    { name: "Jun", deuda: 4900, pago: 3100 },
-  ];
-
-  const pieData = [
-    { name: "Activos", value: stats.active },
-    { name: "Cancelados", value: stats.cancelled },
-  ];
-
-  const initials = user?.nombre?.charAt(0).toUpperCase() ?? "U";
-
   return (
-    <div ref={sectionRef} className="space-y-6 max-w-7xl mx-auto">
-      <div data-animate className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-mb-800 to-mb-900 text-base font-bold text-white shadow-md">
-            {initials}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold  text-primary">
-                Hola, {user?.nombre?.split(" ")[0] ?? "Usuario"}
-              </h1>
-            </div>
-            <p className="text-sm text-secondary mt-0.5">
-              <AnimatedNumber value={stats.total} duration={1000} /> clientes &middot; {formatCurrency(stats.debt)} en cartera
-            </p>
-          </div>
+    <div className="space-y-6 max-w-7xl mx-auto">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-primary">
+            Hola, {user?.nombre?.split(" ")[0] ?? "Usuario"}
+          </h1>
+          <p className="text-sm text-secondary mt-0.5">
+            {stats.total} clientes &middot; {formatCurrency(stats.debt)} en cartera
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate("/clients")}>
@@ -146,101 +109,19 @@ export function Dashboard() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-5">
-
-        <div className="flex flex-col lg:flex-row gap-5">
-
-          <div data-animate className="flex items-center gap-5 rounded-xl border border-default bg-card p-5 shrink-0 lg:w-[220px]">
-            <div className="shrink-0">
-              <svg width="72" height="72" viewBox="0 0 36 36" className="drop-shadow-sm">
-                <circle cx="18" cy="18" r="15.5" fill="none" stroke="color-mix(in srgb, var(--border) 80%, transparent)" strokeWidth="3" />
-                <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--color-mb-600)" strokeWidth="3" strokeDasharray={`${activeRatio} 100`} strokeLinecap="round" transform="rotate(-90 18 18)" />
-                <text x="18" y="19.5" textAnchor="middle" fontSize="9" fontWeight="700" fill="var(--text-primary)" fontFamily="Fira Sans, sans-serif">{stats.total}</text>
-              </svg>
-            </div>
-            <div className="relative">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted">Clientes</p>
-              <div className="mt-2 flex items-center gap-2.5 text-xs">
-                <span className="flex items-center gap-1 font-medium text-emerald-600"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />{stats.active}</span>
-                <span className="text-muted">/</span>
-                <span className="flex items-center gap-1 text-rose-400"><span className="h-1.5 w-1.5 rounded-full bg-rose-400" />{stats.cancelled}</span>
-              </div>
-            </div>
-          </div>
-
-          <div data-animate className="flex-1 rounded-xl border border-default bg-card p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted flex items-center gap-2">
-                  Deuda Total
-                  <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ backgroundColor: "var(--badge-cancelled-bg)", color: "var(--badge-cancelled-text)" }}>
-                    Cartera
-                  </span>
-                </p>
-                <p className="mt-1 text-[34px] font-bold  tracking-tight text-primary">
-                  <AnimatedNumber value={stats.debt} prefix="$" duration={1400} />
-                </p>
-                <p className="text-xs text-muted mt-0.5">
-                  <span className="font-medium text-secondary">{withDiscount.length}</span> con descuento activo &middot; <span className="font-medium text-secondary">${(stats.debt / stats.total || 0).toFixed(0)}</span> promedio
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid gap-5 sm:grid-cols-2">
-
-          <div data-animate className="rounded-xl p-6 border border-default bg-card">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider rounded-full" style={{ color: "var(--badge-active-text)", backgroundColor: "color-mix(in srgb, var(--badge-active-text) 8%, transparent)" }}>
-                  Cobrado
-                </span>
-              </div>
-            </div>
-            <p className="text-[30px] font-bold  tracking-tight leading-none relative" style={{ color: "var(--badge-active-text)" }}>
-              <AnimatedNumber value={stats.payment} prefix="$" duration={1600} />
-            </p>
-            <div className="mt-5 relative">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs text-muted">Tasa de cobro</span>
-                <span className="text-sm font-bold font-mono" style={{ color: "var(--badge-active-text)" }}>{collectionRate.toFixed(0)}%</span>
-              </div>
-              <ProgressBar value={collectionRate} color="var(--badge-active-text)" />
-            </div>
-          </div>
-
-          <div data-animate className="rounded-xl p-6 border border-default bg-card">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider rounded-full" style={{ color: "var(--badge-pending-text)", backgroundColor: "color-mix(in srgb, var(--badge-pending-text) 8%, transparent)" }}>
-                  Pendiente
-                </span>
-              </div>
-            </div>
-            <p className="text-[30px] font-bold  tracking-tight leading-none relative" style={{ color: "var(--badge-pending-text)" }}>
-              <AnimatedNumber value={stats.outstanding} prefix="$" duration={1800} />
-            </p>
-            <div className="mt-5 relative">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs text-muted">Cartera pendiente</span>
-                <span className="text-sm font-bold font-mono" style={{ color: "var(--badge-pending-text)" }}>{(100 - collectionRate).toFixed(0)}%</span>
-              </div>
-              <ProgressBar value={100 - collectionRate} color="var(--badge-pending-text)" />
-              <p className="text-[11px] text-muted mt-1.5 text-right">Meta: &lt; 50%</p>
-            </div>
-          </div>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Total clientes" value={String(stats.total)} sub={`${stats.active} activos · ${stats.cancelled} cancelados`} />
+        <StatCard label="Deuda total" value={formatCurrency(stats.debt)} />
+        <StatCard label="Cobrado" value={formatCurrency(stats.payment)} sub={`${stats.collectionRate.toFixed(0)}% tasa de cobro`} />
+        <StatCard label="Saldo pendiente" value={formatCurrency(stats.outstanding)} sub={`${stats.withDiscount} con descuento`} />
       </div>
 
-      <div data-animate className="grid gap-6 lg:grid-cols-7">
+      <div className="grid gap-6 lg:grid-cols-7">
         <Card className="lg:col-span-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-primary">Movimiento Mensual</h2>
-            <div className="flex items-center gap-2.5 text-[11px] font-medium text-muted">
-              <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-mb-700" /> Deuda</span>
-              <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-accent-500" /> Cobrado</span>
-            </div>
+          <h2 className="text-sm font-semibold text-primary mb-4">Movimiento Mensual</h2>
+          <div className="flex items-center gap-3 text-xs text-muted mb-4">
+            <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-mb-700" /> Deuda</span>
+            <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-accent-500" /> Cobrado</span>
           </div>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -248,7 +129,7 @@ export function Dashboard() {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis dataKey="name" tick={{ fontSize: 12, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 12, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", background: "var(--bg-card)", color: "var(--text-primary)" }} />
+                <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-card)", color: "var(--text-primary)" }} />
                 <Bar dataKey="deuda" fill="var(--color-mb-700)" radius={[4, 4, 0, 0]} maxBarSize={28} />
                 <Bar dataKey="pago" fill="var(--color-accent-500)" radius={[4, 4, 0, 0]} maxBarSize={28} />
               </BarChart>
@@ -257,50 +138,32 @@ export function Dashboard() {
         </Card>
 
         <Card className="lg:col-span-3">
-          <h2 className="text-base font-semibold text-primary mb-2">Estado de Cartera</h2>
-          {stats.total === 0 ? (
-            <div className="flex h-56 items-center justify-center text-muted text-sm">Sin datos</div>
-          ) : (
-            <div className="flex flex-col items-center">
-              <div className="h-48 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3} dataKey="value">
-                      {pieData.map((_, i) => (<Cell key={i} fill={PIE_COLORS[i]} />))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="mt-2 flex items-center gap-5 text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-mb-800" />
-                  <span className="text-secondary">Activos ({stats.active})</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
-                  <span className="text-secondary">Cancelados ({stats.cancelled})</span>
-                </div>
-              </div>
-                <div className="mt-4 grid w-full grid-cols-2 gap-2">
-                <div className="rounded-xl p-3 text-center bg-[var(--badge-active-bg)]">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--badge-active-text)" }}>Cobrado</p>
-                  <p className="mt-1 text-lg font-bold" style={{ color: "var(--badge-active-text)" }}>{collectionRate.toFixed(1)}%</p>
-                </div>
-                <div className="rounded-xl p-3 text-center bg-[var(--badge-pending-bg)]">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--badge-pending-text)" }}>Pendiente</p>
-                  <p className="mt-1 text-lg font-bold" style={{ color: "var(--badge-pending-text)" }}>{(100 - collectionRate).toFixed(1)}%</p>
-                </div>
-              </div>
+          <h2 className="text-sm font-semibold text-primary mb-4">Resumen</h2>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between rounded-lg bg-surface px-4 py-3">
+              <span className="text-sm text-secondary">Activos</span>
+              <span className="text-sm font-semibold text-primary">{stats.active}</span>
             </div>
-          )}
+            <div className="flex items-center justify-between rounded-lg bg-surface px-4 py-3">
+              <span className="text-sm text-secondary">Cancelados</span>
+              <span className="text-sm font-semibold text-primary">{stats.cancelled}</span>
+            </div>
+            <div className="flex items-center justify-between rounded-lg bg-surface px-4 py-3">
+              <span className="text-sm text-secondary">Cobrado</span>
+              <span className="text-sm font-semibold text-emerald-600">{stats.collectionRate.toFixed(1)}%</span>
+            </div>
+            <div className="flex items-center justify-between rounded-lg bg-surface px-4 py-3">
+              <span className="text-sm text-secondary">Pendiente</span>
+              <span className="text-sm font-semibold text-amber-600">{(100 - stats.collectionRate).toFixed(1)}%</span>
+            </div>
+          </div>
         </Card>
       </div>
 
-      <div data-animate className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-semibold text-primary">Últimos Clientes</h2>
+            <h2 className="text-sm font-semibold text-primary">Últimos Clientes</h2>
             <Button variant="ghost" size="sm" onClick={() => navigate("/clients")}>
               Ver todos <ArrowRight className="h-3.5 w-3.5" />
             </Button>
@@ -310,8 +173,8 @@ export function Dashboard() {
           ) : (
             <div className="space-y-1">
               {recentClients.map((c) => (
-                <button key={c.id} onClick={() => navigate(`/clients/${c.id}`)} className="flex w-full items-center gap-3 rounded-lg p-2.5 transition-all hover:bg-[var(--hover)] active:scale-[0.99]">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold" style={{ backgroundColor: "var(--color-mb-100)", color: "var(--color-mb-700)" }}>
+                <button key={c.id} onClick={() => navigate(`/clients/${c.id}`)} className="flex w-full items-center gap-3 rounded-lg p-2.5 hover:bg-[var(--hover)] transition-colors">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface text-xs font-semibold text-secondary">
                     {c.fullName.charAt(0)}
                   </div>
                   <div className="flex-1 text-left min-w-0">
@@ -327,57 +190,27 @@ export function Dashboard() {
         </Card>
 
         <Card>
-          <h2 className="text-base font-semibold text-primary mb-3">Mayores Deudores</h2>
+          <h2 className="text-sm font-semibold text-primary mb-3">Mayores Deudores</h2>
           {topDebtors.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted">Sin deudores</p>
           ) : (
             <div className="space-y-1">
               {topDebtors.map((c, i) => (
-                <button key={c.id} onClick={() => navigate(`/clients/${c.id}`)} className="flex w-full items-center gap-3 rounded-lg p-2.5 transition-all hover:bg-[var(--hover)] active:scale-[0.99]">
-                  <span
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ring-1"
-                    style={{
-                      backgroundColor: i === 0 ? "var(--badge-cancelled-bg)" : i === 1 ? "var(--badge-pending-bg)" : i === 2 ? "var(--badge-info-bg)" : "var(--badge-default-bg)",
-                      color: i === 0 ? "var(--badge-cancelled-text)" : i === 1 ? "var(--badge-pending-text)" : i === 2 ? "var(--badge-info-text)" : "var(--badge-default-text)",
-                      borderColor: i === 0 ? "color-mix(in srgb, var(--badge-cancelled-text) 30%, transparent)" : i === 1 ? "color-mix(in srgb, var(--badge-pending-text) 30%, transparent)" : i === 2 ? "color-mix(in srgb, var(--badge-info-text) 30%, transparent)" : "transparent",
-                    }}
-                  >
+                <button key={c.id} onClick={() => navigate(`/clients/${c.id}`)} className="flex w-full items-center gap-3 rounded-lg p-2.5 hover:bg-[var(--hover)] transition-colors">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface text-xs font-semibold text-muted">
                     {i + 1}
                   </span>
                   <div className="flex-1 text-left min-w-0">
                     <p className="text-sm font-medium text-primary truncate">{c.fullName}</p>
                     <p className="text-xs text-muted">{c.city || "—"}</p>
                   </div>
-                  <span className="font-mono text-sm font-semibold" style={{ color: "var(--badge-cancelled-text)" }}>{formatCurrency(c.totalAmount)}</span>
+                  <span className="font-mono text-sm font-semibold text-rose-600">{formatCurrency(c.totalAmount)}</span>
                 </button>
               ))}
             </div>
           )}
         </Card>
       </div>
-    </div>
-  );
-}
-
-function ProgressBar({ value, color }: { value: number; color: string }) {
-  const barRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = barRef.current;
-    if (!el) return;
-    el.style.width = "0%";
-    animate({ w: 0 }, {
-      w: Math.min(value, 100),
-      duration: 1000,
-      easing: "easeOutCubic",
-      delay: 400,
-      onUpdate: (self: any) => {
-        el.style.width = `${self.animations[0].currentValue}%`;
-      },
-    });
-  }, [value]);
-  return (
-    <div className="h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: `color-mix(in srgb, ${color} 12%, transparent)` }}>
-      <div ref={barRef} className="h-full rounded-full" style={{ backgroundColor: color, width: "0%" }} />
     </div>
   );
 }

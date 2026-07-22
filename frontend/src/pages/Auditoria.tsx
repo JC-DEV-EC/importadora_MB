@@ -50,7 +50,7 @@ export function Auditoria() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
+    <div className="space-y-6 ">
       <div>
         <h1 className="text-2xl font-bold  text-primary">Auditoría de Cambios</h1>
         <p className="mt-1 text-sm text-secondary">{totalElements} registros en el log</p>
@@ -85,11 +85,11 @@ export function Auditoria() {
             <table className="min-w-full divide-y border-light">
               <thead>
                 <tr className="bg-surface">
-                  <th className="px-4 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted">Fecha</th>
-                  <th className="px-4 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted">Usuario</th>
-                  <th className="px-4 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted">Acción</th>
-                  <th className="px-4 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted">Entidad</th>
-                  <th className="px-4 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted">Detalle</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted">Fecha</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted">Usuario</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted">Acción</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted">Entidad</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted">Detalle</th>
                 </tr>
               </thead>
               <tbody className="divide-y border-light">
