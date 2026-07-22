@@ -141,7 +141,7 @@ export function ClientList() {
     <div className="space-y-6 animate-fade-in-up">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold font-display text-primary">Clientes</h1>
+          <h1 className="text-2xl font-bold  text-primary">Clientes</h1>
           <p className="mt-1 text-sm text-secondary">{totalElements} clientes registrados</p>
         </div>
         <div className="flex gap-2">

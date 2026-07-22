@@ -89,7 +89,7 @@ export function ClientDetail() {
           {client.fullName.charAt(0)}
         </div>
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-bold font-display text-primary truncate">
+          <h1 className="text-xl font-bold  text-primary truncate">
             {client.fullName}
           </h1>
           <div className="flex items-center gap-3 text-xs text-muted">
@@ -110,19 +110,19 @@ export function ClientDetail() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">Deuda Total</p>
-          <p className="mt-1.5 text-2xl font-bold font-display text-primary">{formatCurrency(client.debt)}</p>
+          <p className="mt-1.5 text-2xl font-bold  text-primary">{formatCurrency(client.debt)}</p>
         </Card>
         <Card>
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">Total Pagado</p>
-          <p className="mt-1.5 text-2xl font-bold font-display text-emerald-600">{formatCurrency(client.payment)}</p>
+          <p className="mt-1.5 text-2xl font-bold  text-emerald-600">{formatCurrency(client.payment)}</p>
         </Card>
         <Card>
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">Saldo Pendiente</p>
-          <p className="mt-1.5 text-2xl font-bold font-display text-primary">{formatCurrency(client.totalAmount)}</p>
+          <p className="mt-1.5 text-2xl font-bold  text-primary">{formatCurrency(client.totalAmount)}</p>
         </Card>
         <Card>
           <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">Descuento</p>
-          <p className="mt-1.5 text-2xl font-bold font-display text-primary">
+          <p className="mt-1.5 text-2xl font-bold  text-primary">
             {client.discount ? "10%" : "0%"}
           </p>
         </Card>

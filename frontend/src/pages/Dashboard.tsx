@@ -125,7 +125,7 @@ export function Dashboard() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold font-display text-primary">
+              <h1 className="text-xl font-bold  text-primary">
                 Hola, {user?.nombre?.split(" ")[0] ?? "Usuario"}
               </h1>
             </div>
@@ -150,18 +150,12 @@ export function Dashboard() {
 
         <div className="flex flex-col lg:flex-row gap-5">
 
-          <div data-animate className="group relative flex items-center gap-5 overflow-hidden rounded-[20px] border border-default bg-card p-5 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover shrink-0 lg:w-[220px] noise">
-            <svg className="absolute top-2 right-2 opacity-[0.06] w-16 h-16" viewBox="0 0 60 60" fill="none">
-              <circle cx="30" cy="30" r="28" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 3" fill="none" />
-              <circle cx="22" cy="22" r="4" stroke="currentColor" strokeWidth="1.5" fill="none" />
-              <circle cx="38" cy="22" r="4" stroke="currentColor" strokeWidth="1.5" fill="none" />
-              <path d="M16 38 Q22 32 30 38 T44 38" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" />
-            </svg>
-            <div className="relative shrink-0">
+          <div data-animate className="flex items-center gap-5 rounded-xl border border-default bg-card p-5 shrink-0 lg:w-[220px]">
+            <div className="shrink-0">
               <svg width="72" height="72" viewBox="0 0 36 36" className="drop-shadow-sm">
                 <circle cx="18" cy="18" r="15.5" fill="none" stroke="color-mix(in srgb, var(--border) 80%, transparent)" strokeWidth="3" />
                 <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--color-mb-600)" strokeWidth="3" strokeDasharray={`${activeRatio} 100`} strokeLinecap="round" transform="rotate(-90 18 18)" />
-                <text x="18" y="19.5" textAnchor="middle" fontSize="9" fontWeight="700" fill="var(--text-primary)" fontFamily="Plus Jakarta Sans, sans-serif">{stats.total}</text>
+                <text x="18" y="19.5" textAnchor="middle" fontSize="9" fontWeight="700" fill="var(--text-primary)" fontFamily="Fira Sans, sans-serif">{stats.total}</text>
               </svg>
             </div>
             <div className="relative">
@@ -174,19 +168,8 @@ export function Dashboard() {
             </div>
           </div>
 
-          <div data-animate className="group relative flex-1 overflow-hidden rounded-[20px] border border-default bg-card p-6 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover noise">
-            <div className="absolute inset-0 opacity-[0.018]" style={{
-              backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 23px, var(--border) 23px, var(--border) 24px)`
-            }} />
-            <div className="absolute top-0 right-0 w-48 h-48 rounded-full opacity-[0.03]" style={{ background: "radial-gradient(circle, var(--color-accent-500) 0%, transparent 70%)", transform: "translate(30%, -30%)" }} />
-            <svg className="absolute bottom-3 right-4 opacity-[0.04] w-20 h-16" viewBox="0 0 80 60" fill="none">
-              <rect x="6" y="8" width="16" height="22" rx="1.5" stroke="currentColor" strokeWidth="1.2" fill="none" />
-              <rect x="8" y="12" width="12" height="4" rx="1" stroke="currentColor" strokeWidth="0.8" fill="none" />
-              <rect x="8" y="18" width="8" height="3" rx="1" stroke="currentColor" strokeWidth="0.8" fill="none" />
-              <path d="M28 30 L36 18 L44 24 L52 14 L60 22" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" fill="none" />
-              <circle cx="60" cy="22" r="2" fill="currentColor" />
-            </svg>
-            <div className="flex items-start justify-between relative">
+          <div data-animate className="flex-1 rounded-xl border border-default bg-card p-6">
+            <div className="flex items-start justify-between">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-muted flex items-center gap-2">
                   Deuda Total
@@ -194,7 +177,7 @@ export function Dashboard() {
                     Cartera
                   </span>
                 </p>
-                <p className="mt-1 text-[34px] font-bold font-display tracking-tight text-primary">
+                <p className="mt-1 text-[34px] font-bold  tracking-tight text-primary">
                   <AnimatedNumber value={stats.debt} prefix="$" duration={1400} />
                 </p>
                 <p className="text-xs text-muted mt-0.5">
@@ -207,29 +190,15 @@ export function Dashboard() {
 
         <div className="grid gap-5 sm:grid-cols-2">
 
-          <div data-animate className="group relative overflow-hidden rounded-[20px] p-6 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover border border-default noise" style={{ background: "linear-gradient(135deg, var(--badge-active-bg) 0%, transparent 70%)" }}>
-            <svg className="absolute top-3 right-4 w-20 h-16 opacity-[0.08]" viewBox="0 0 80 60" fill="none">
-              <path d="M8 48 Q16 36 24 44 T40 24 T56 16 T72 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-emerald-600" fill="none" />
-              <circle cx="72" cy="7" r="3" fill="currentColor" className="text-emerald-600" />
-              <path d="M14 32 Q22 22 30 30 T46 12" stroke="currentColor" strokeWidth="1" strokeLinecap="round" className="text-emerald-400" fill="none" opacity="0.4" />
-              <circle cx="72" cy="7" r="5" stroke="currentColor" className="text-emerald-600" strokeWidth="0.8" fill="none" opacity="0.3" />
-            </svg>
-            <svg className="absolute -bottom-1 -left-1 opacity-[0.04] w-24 h-20" viewBox="0 0 100 80" fill="none">
-              <circle cx="50" cy="30" r="18" stroke="currentColor" strokeWidth="1.2" className="text-emerald-600" fill="none" />
-              <path d="M50 20 L50 30 L56 36" stroke="currentColor" strokeWidth="1.5" className="text-emerald-600" strokeLinecap="round" fill="none" />
-              <rect x="30" y="52" width="8" height="16" rx="1" stroke="currentColor" strokeWidth="1" fill="none" />
-              <rect x="42" y="48" width="8" height="20" rx="1" stroke="currentColor" strokeWidth="1" fill="none" />
-              <rect x="54" y="54" width="8" height="14" rx="1" stroke="currentColor" strokeWidth="1" fill="none" />
-              <rect x="66" y="50" width="8" height="18" rx="1" stroke="currentColor" strokeWidth="1" fill="none" />
-            </svg>
-            <div className="flex items-center justify-between mb-4 relative">
+          <div data-animate className="rounded-xl p-6 border border-default bg-card">
+            <div className="flex items-center justify-between mb-4">
               <div>
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider rounded-full" style={{ color: "var(--badge-active-text)", backgroundColor: "color-mix(in srgb, var(--badge-active-text) 8%, transparent)" }}>
                   Cobrado
                 </span>
               </div>
             </div>
-            <p className="text-[30px] font-bold font-display tracking-tight leading-none relative" style={{ color: "var(--badge-active-text)" }}>
+            <p className="text-[30px] font-bold  tracking-tight leading-none relative" style={{ color: "var(--badge-active-text)" }}>
               <AnimatedNumber value={stats.payment} prefix="$" duration={1600} />
             </p>
             <div className="mt-5 relative">
@@ -241,24 +210,15 @@ export function Dashboard() {
             </div>
           </div>
 
-          <div data-animate className="group relative overflow-hidden rounded-[20px] p-6 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover border border-default noise" style={{ background: "linear-gradient(135deg, var(--badge-pending-bg) 0%, transparent 70%)" }}>
-            <svg className="absolute -bottom-3 -right-3 w-28 h-28 opacity-[0.05] select-none pointer-events-none" viewBox="0 0 40 40" fill="none">
-              <path d="M4 20 A16 16 0 0 1 36 20" stroke="currentColor" strokeWidth="5" strokeLinecap="round" className="text-amber-600" />
-              <path d="M36 20 A16 16 0 0 1 4 20" stroke="currentColor" strokeWidth="5" strokeLinecap="round" className="text-amber-300" strokeDasharray="50 100" />
-            </svg>
-            <svg className="absolute top-3 right-3 opacity-[0.06] w-14 h-14" viewBox="0 0 60 60" fill="none">
-              <circle cx="30" cy="30" r="22" stroke="currentColor" strokeWidth="1.2" fill="none" />
-              <path d="M30 16 L30 30 L38 38" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-              <circle cx="30" cy="30" r="3" fill="currentColor" opacity="0.3" />
-            </svg>
-            <div className="flex items-center justify-between mb-4 relative">
+          <div data-animate className="rounded-xl p-6 border border-default bg-card">
+            <div className="flex items-center justify-between mb-4">
               <div>
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider rounded-full" style={{ color: "var(--badge-pending-text)", backgroundColor: "color-mix(in srgb, var(--badge-pending-text) 8%, transparent)" }}>
                   Pendiente
                 </span>
               </div>
             </div>
-            <p className="text-[30px] font-bold font-display tracking-tight leading-none relative" style={{ color: "var(--badge-pending-text)" }}>
+            <p className="text-[30px] font-bold  tracking-tight leading-none relative" style={{ color: "var(--badge-pending-text)" }}>
               <AnimatedNumber value={stats.outstanding} prefix="$" duration={1800} />
             </p>
             <div className="mt-5 relative">
@@ -322,12 +282,12 @@ export function Dashboard() {
                   <span className="text-secondary">Cancelados ({stats.cancelled})</span>
                 </div>
               </div>
-              <div className="mt-4 grid w-full grid-cols-2 gap-2">
-                <div className="rounded-xl p-3 text-center" style={{ background: "linear-gradient(135deg, var(--badge-active-bg), transparent)" }}>
+                <div className="mt-4 grid w-full grid-cols-2 gap-2">
+                <div className="rounded-xl p-3 text-center bg-[var(--badge-active-bg)]">
                   <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--badge-active-text)" }}>Cobrado</p>
                   <p className="mt-1 text-lg font-bold" style={{ color: "var(--badge-active-text)" }}>{collectionRate.toFixed(1)}%</p>
                 </div>
-                <div className="rounded-xl p-3 text-center" style={{ background: "linear-gradient(135deg, var(--badge-pending-bg), transparent)" }}>
+                <div className="rounded-xl p-3 text-center bg-[var(--badge-pending-bg)]">
                   <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--badge-pending-text)" }}>Pendiente</p>
                   <p className="mt-1 text-lg font-bold" style={{ color: "var(--badge-pending-text)" }}>{(100 - collectionRate).toFixed(1)}%</p>
                 </div>

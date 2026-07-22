@@ -78,7 +78,7 @@ export function ClientForm() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-xl font-bold font-display text-primary">
+          <h1 className="text-xl font-bold  text-primary">
             {isEdit ? "Editar Cliente" : "Nuevo Cliente"}
           </h1>
           <p className="text-sm text-secondary">

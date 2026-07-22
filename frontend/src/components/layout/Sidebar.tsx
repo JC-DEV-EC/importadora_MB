@@ -204,7 +204,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
             </span>
           </div>
           <div className="relative leading-tight">
-            <h1 className="text-sm font-bold font-display tracking-tight">
+            <h1 className="text-sm font-bold  tracking-tight">
               Importadora
             </h1>
             <p className="text-[11px] font-medium text-white/50">MB</p>

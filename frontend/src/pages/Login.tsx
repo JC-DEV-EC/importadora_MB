@@ -43,7 +43,7 @@ export function Login() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-mb-800 to-mb-900 text-lg font-extrabold text-white shadow-lg">
             MB
           </div>
-          <h1 className="text-2xl font-bold font-display text-primary">Importadora MB</h1>
+          <h1 className="text-2xl font-bold  text-primary">Importadora MB</h1>
           <p className="mt-1 text-sm text-secondary">Inicia sesión para continuar</p>
         </div>
 
