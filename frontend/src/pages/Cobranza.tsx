@@ -24,7 +24,7 @@ const cobranzaService = {
     api.get("/clients", { params: { page, size, q, status: "ACTIVE" } }).then((r) => r.data),
 };
 
-export function Cobranza() {
+export default function Cobranza() {
   const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [q, setQ] = useState("");
@@ -117,7 +117,7 @@ export function Cobranza() {
     },
     {
       key: "actions",
-      header: "",
+      header: "Acciones",
       render: (c) => (
         <div className="flex items-center justify-end gap-1">
           <button onClick={() => navigate(`/clients/${c.id}`)} className="rounded p-1.5 text-muted hover:text-secondary hover:bg-surface" title="Pagar">

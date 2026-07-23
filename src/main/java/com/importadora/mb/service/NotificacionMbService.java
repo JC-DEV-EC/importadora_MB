@@ -19,9 +19,11 @@ public class NotificacionMbService {
 
     private static final Logger log = LoggerFactory.getLogger(NotificacionMbService.class);
     private final NotificacionMbRepository repository;
+    private final WebSocketPublisher webSocketPublisher;
 
-    public NotificacionMbService(NotificacionMbRepository repository) {
+    public NotificacionMbService(NotificacionMbRepository repository, WebSocketPublisher webSocketPublisher) {
         this.repository = repository;
+        this.webSocketPublisher = webSocketPublisher;
     }
 
     public PageResponse<NotificacionMbDto> listar(Long usuarioId, int page, int size) {
@@ -46,6 +48,7 @@ public class NotificacionMbService {
         NotificacionMb notif = new NotificacionMb(usuarioId, tipo, mensaje, clienteId);
         notif = repository.save(notif);
         log.info("Notificacion creada para usuario {}: [{}] {} (clienteId={})", usuarioId, tipo, mensaje, clienteId);
+        webSocketPublisher.publish("NOTIFICATION_CREATED", notif.getId());
         return NotificacionMbDto.fromEntity(notif);
     }
 
@@ -55,6 +58,7 @@ public class NotificacionMbService {
             if (n.getUsuarioId().equals(usuarioId)) {
                 n.setLeido(true);
                 repository.save(n);
+                webSocketPublisher.publish("NOTIFICATION_READ", id);
             }
         });
     }
@@ -62,5 +66,6 @@ public class NotificacionMbService {
     @Transactional
     public void marcarTodasLeidas(Long usuarioId) {
         repository.marcarTodasComoLeidas(usuarioId);
+        webSocketPublisher.publish("NOTIFICATIONS_ALL_READ");
     }
 }

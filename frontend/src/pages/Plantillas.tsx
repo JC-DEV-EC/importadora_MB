@@ -11,7 +11,7 @@ import type { PlantillaMbDto } from "../types";
 
 const defaultForm = { nombre: "", tipo: "RECORDATORIO", asunto: "", cuerpo: "", variables: "" };
 
-export function Plantillas() {
+export default function Plantillas() {
   const { toast } = useToast();
   const [data, setData] = useState<PlantillaMbDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -99,25 +99,25 @@ export function Plantillas() {
             <p className="text-xs text-muted">Crea tu primera plantilla para empezar</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y border-light">
+          <div className="border border-default rounded-lg bg-card overflow-hidden">
+            <table className="min-w-full">
               <thead>
                 <tr className="bg-surface">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted">Nombre</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted">Tipo</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted">Asunto</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted">Estado</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted">Acciones</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted">Nombre</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted">Tipo</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted">Asunto</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted">Estado</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-muted">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y border-light">
+              <tbody>
                 {data.map((item) => (
-                  <tr key={item.id} className="bg-card transition-colors hover:bg-surface/50">
+                  <tr key={item.id} className="bg-card">
                     <td className="px-4 py-3 text-sm font-medium text-primary">{item.nombre}</td>
                     <td className="px-4 py-3 text-sm text-secondary">{item.tipo}</td>
                     <td className="px-4 py-3 text-sm text-secondary max-w-[200px] truncate">{item.asunto ?? "—"}</td>
                     <td className="px-4 py-3">
-                      <Badge variant={item.activo ? "active" : "cancelled"}>{item.activo ? "Activa" : "Inactiva"}</Badge>
+                      <Badge>{item.activo ? "Activa" : "Inactiva"}</Badge>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">

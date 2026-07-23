@@ -11,6 +11,8 @@ export interface ClienteMbDto {
   phone: string | null;
   email: string | null;
   cedula: string | null;
+  ivaPorcentaje: number | null;
+  ivaAmount: number | null;
 }
 
 export interface ClientCreateRequest {

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import api from "../services/api";
-import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
 import { Modal } from "../components/ui/Modal";
@@ -9,7 +8,7 @@ import { useAuth } from "../context/AuthContext";
 import { Shield, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import type { UsuarioDto } from "../types";
 
-export function AdminUsuarios() {
+export default function AdminUsuarios() {
   const { isAdmin } = useAuth();
   const { toast } = useToast();
   const [data, setData] = useState<UsuarioDto[]>([]);
@@ -75,7 +74,7 @@ export function AdminUsuarios() {
         <p className="mt-1 text-sm text-secondary">{data.length} usuarios registrados</p>
       </div>
 
-      <Card>
+      <div className="border border-default rounded-lg bg-card overflow-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-mb-500 border-t-transparent" />
@@ -86,48 +85,46 @@ export function AdminUsuarios() {
             <p className="mt-3 text-sm font-medium text-secondary">Sin usuarios</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y border-light">
-              <thead>
-                <tr className="bg-surface">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted">Email</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted">Nombre</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted">Rol</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted">Estado</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-muted">Acciones</th>
+          <table className="min-w-full">
+            <thead>
+              <tr className="bg-surface">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted">Email</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted">Nombre</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted">Rol</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted">Estado</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-muted">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pageData.map((u) => (
+                <tr key={u.id} className="bg-card">
+                  <td className="px-4 py-3 text-sm text-primary">{u.email}</td>
+                  <td className="px-4 py-3 text-sm text-primary">{u.nombre}</td>
+                  <td className="px-4 py-3">
+                    <select value={u.rol} onChange={(e) => handleRoleChange(u.id, e.target.value)} className="rounded-lg border border-default bg-card px-2.5 py-1.5 text-sm text-primary focus:border-mb-400 focus:outline-none focus:ring-2 focus:ring-mb-400/20">
+                      <option value="AGENT">AGENT</option>
+                      <option value="ADMIN">ADMIN</option>
+                    </select>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Badge>{u.estado === "ACTIVO" ? "Activo" : "Inactivo"}</Badge>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button variant="outline" size="sm" onClick={() => handleToggleStatus(u.id, u.estado)}>
+                        {u.estado === "ACTIVO" ? "Desactivar" : "Activar"}
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setDeleteId(u.id)} className="text-rose-500 hover:text-rose-700">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y border-light">
-                {pageData.map((u) => (
-                  <tr key={u.id} className="bg-card transition-colors">
-                    <td className="px-4 py-3 text-sm text-primary">{u.email}</td>
-                    <td className="px-4 py-3 text-sm text-primary">{u.nombre}</td>
-                    <td className="px-4 py-3">
-                      <select value={u.rol} onChange={(e) => handleRoleChange(u.id, e.target.value)} className="rounded-lg border border-default bg-card px-2.5 py-1.5 text-sm text-primary focus:border-mb-400 focus:outline-none focus:ring-2 focus:ring-mb-400/20">
-                        <option value="AGENT">AGENT</option>
-                        <option value="ADMIN">ADMIN</option>
-                      </select>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant={u.estado === "ACTIVO" ? "active" : "cancelled"}>{u.estado === "ACTIVO" ? "Activo" : "Inactivo"}</Badge>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button variant="outline" size="sm" onClick={() => handleToggleStatus(u.id, u.estado)}>
-                          {u.estado === "ACTIVO" ? "Desactivar" : "Activar"}
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setDeleteId(u.id)} className="text-rose-500 hover:text-rose-700">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         )}
-      </Card>
+      </div>
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between">

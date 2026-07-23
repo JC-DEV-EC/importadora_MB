@@ -1,10 +1,12 @@
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
+import { useWebSocket } from "../../hooks/useWebSocket";
 import { useState } from "react";
 
 export function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  useWebSocket();
 
   return (
     <div className="min-h-screen" style={{ background: "var(--bg-layout)" }}>

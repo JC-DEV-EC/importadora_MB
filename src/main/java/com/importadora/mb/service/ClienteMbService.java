@@ -30,18 +30,22 @@ public class ClienteMbService {
     private final MovimientoMbService movimientoService;
     private final NotificacionMbService notificacionService;
     private final AuditoriaMbService auditoriaService;
+    private final ConfiguracionMbService configuracionService;
+    private final WebSocketPublisher webSocketPublisher;
 
-    public ClienteMbService(ClienteMbRepository repository, MovimientoMbService movimientoService, NotificacionMbService notificacionService, AuditoriaMbService auditoriaService) {
+    public ClienteMbService(ClienteMbRepository repository, MovimientoMbService movimientoService, NotificacionMbService notificacionService, AuditoriaMbService auditoriaService, ConfiguracionMbService configuracionService, WebSocketPublisher webSocketPublisher) {
         this.repository = repository;
         this.movimientoService = movimientoService;
         this.notificacionService = notificacionService;
         this.auditoriaService = auditoriaService;
+        this.configuracionService = configuracionService;
+        this.webSocketPublisher = webSocketPublisher;
     }
 
     public List<ClienteMbDto> findAll() {
         return repository.findAll()
                 .stream()
-                .map(ClienteMbDto::fromEntity)
+                .map(this::toDto)
                 .toList();
     }
 
@@ -56,7 +60,7 @@ public class ClienteMbService {
         }
 
         List<ClienteMbDto> content = resultPage.stream()
-                .map(ClienteMbDto::fromEntity)
+                .map(this::toDto)
                 .toList();
 
         return PageResponse.of(resultPage, content);
@@ -64,11 +68,18 @@ public class ClienteMbService {
 
     public Optional<ClienteMbDto> findById(Long id) {
         return repository.findById(id)
-                .map(ClienteMbDto::fromEntity);
+                .map(this::toDto);
     }
 
     @Transactional
-    public ClienteMbDto create(ClientCreateRequest request, Long usuarioId) {
+    public ClienteMbDto create(ClientCreateRequest request, Long usuarioId, String usuarioNombre) {
+        BigDecimal initialDebt = request.initialDebt() != null ? request.initialDebt() : BigDecimal.ZERO;
+
+        BigDecimal maxDebt = configuracionService.getValorDecimal("limite_credito_default", new BigDecimal("10000"));
+        if (initialDebt.compareTo(maxDebt) > 0) {
+            throw new IllegalArgumentException("La deuda inicial no puede exceder $" + maxDebt);
+        }
+
         ClienteMb entity = new ClienteMb();
         entity.setFirstName(request.firstName());
         entity.setLastName(request.lastName());
@@ -78,7 +89,6 @@ public class ClienteMbService {
         entity.setEmail(request.email());
         entity.setCedula(request.cedula());
 
-        BigDecimal initialDebt = request.initialDebt() != null ? request.initialDebt() : BigDecimal.ZERO;
         entity.setDebt(initialDebt);
         entity.setPayment(BigDecimal.ZERO);
         entity.setDiscount(Boolean.TRUE.equals(request.discount()));
@@ -94,14 +104,15 @@ public class ClienteMbService {
         notificacionService.crear(usuarioId, "success",
             "Cliente \"" + nombreCompleto + "\" creado con éxito",
             saved.getId());
-        auditoriaService.registrar(usuarioId, "", "CREAR", "CLIENTE", saved.getId(),
+        auditoriaService.registrar(usuarioId, usuarioNombre, "CREAR", "CLIENTE", saved.getId(),
             "Cliente \"" + nombreCompleto + "\" creado. Deuda inicial: " + (request.initialDebt() != null ? request.initialDebt() : BigDecimal.ZERO));
+        webSocketPublisher.publish("CLIENT_CREATED", saved.getId());
 
-        return ClienteMbDto.fromEntity(saved);
+        return toDto(saved);
     }
 
     @Transactional
-    public Optional<ClienteMbDto> update(Long id, ClientUpdateRequest request, Long usuarioId) {
+    public Optional<ClienteMbDto> update(Long id, ClientUpdateRequest request, Long usuarioId, String usuarioNombre) {
         return repository.findById(id)
                 .map(entity -> {
                     entity.setFirstName(request.firstName());
@@ -119,14 +130,15 @@ public class ClienteMbService {
                     log.info("Updated client id={} name={} {} city={} discount={} status={} totalAmount={}",
                             saved.getId(), saved.getFirstName(), saved.getLastName(), saved.getCity(),
                             saved.getDiscount(), saved.getStatus(), saved.getTotalAmount());
-                    auditoriaService.registrar(usuarioId, "", "ACTUALIZAR", "CLIENTE", saved.getId(),
+                    auditoriaService.registrar(usuarioId, usuarioNombre, "ACTUALIZAR", "CLIENTE", saved.getId(),
                         "Cliente actualizado. Deuda=" + saved.getDebt() + " Saldo=" + saved.getTotalAmount());
-                    return ClienteMbDto.fromEntity(saved);
+                    webSocketPublisher.publish("CLIENT_UPDATED", saved.getId());
+                    return toDto(saved);
                 });
     }
 
     @Transactional
-    public Optional<ClienteMbDto> addCharge(Long id, ClientChargeRequest request, Long usuarioId) {
+    public Optional<ClienteMbDto> addCharge(Long id, ClientChargeRequest request, Long usuarioId, String usuarioNombre) {
         if (request.amount() == null || request.amount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Charge amount must be greater than zero");
         }
@@ -148,15 +160,16 @@ public class ClienteMbService {
                     notificacionService.crear(usuarioId, "warning",
                         "Cargo de $" + String.format("%.2f", request.amount()) + " a " + nombre + desc,
                         saved.getId());
-                    auditoriaService.registrar(usuarioId, "", "CARGO", "CLIENTE", saved.getId(),
+                    auditoriaService.registrar(usuarioId, usuarioNombre, "CARGO", "CLIENTE", saved.getId(),
                         "Cargo de $" + String.format("%.2f", request.amount()) + " a " + nombre + desc);
+                    webSocketPublisher.publish("CHARGE_ADDED", saved.getId());
 
-                    return ClienteMbDto.fromEntity(saved);
+                    return toDto(saved);
                 });
     }
 
     @Transactional
-    public Optional<ClienteMbDto> addPayment(Long id, ClientPaymentRequest request, Long usuarioId) {
+    public Optional<ClienteMbDto> addPayment(Long id, ClientPaymentRequest request, Long usuarioId, String usuarioNombre) {
         if (request.amount() == null || request.amount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Payment amount must be greater than zero");
         }
@@ -185,17 +198,27 @@ public class ClienteMbService {
                     notificacionService.crear(usuarioId, "success",
                         "Pago de $" + String.format("%.2f", request.amount()) + " de " + nombre + desc,
                         saved.getId());
-                    auditoriaService.registrar(usuarioId, "", "PAGO", "CLIENTE", saved.getId(),
+                    auditoriaService.registrar(usuarioId, usuarioNombre, "PAGO", "CLIENTE", saved.getId(),
                         "Pago de $" + String.format("%.2f", request.amount()) + " de " + nombre + desc);
+                    webSocketPublisher.publish("PAYMENT_ADDED", saved.getId());
 
-                    return ClienteMbDto.fromEntity(saved);
+                    return toDto(saved);
                 });
     }
 
     @Transactional
-    public void delete(Long id) {
-        repository.deleteById(id);
-        log.info("Deleted client id={}", id);
+    public void delete(Long id, Long usuarioId, String usuarioNombre) {
+        repository.findById(id).ifPresent(entity -> {
+            String nombre = entity.getFirstName() + " " + entity.getLastName();
+            repository.delete(entity);
+            log.info("Deleted client id={} name={}", id, nombre);
+            notificacionService.crear(usuarioId, "error",
+                "Cliente \"" + nombre + "\" eliminado",
+                id);
+            auditoriaService.registrar(usuarioId, usuarioNombre, "ELIMINAR", "CLIENTE", id,
+                "Cliente \"" + nombre + "\" eliminado del sistema");
+            webSocketPublisher.publish("CLIENT_DELETED", id);
+        });
     }
 
     private void recalculateFinancials(ClienteMb entity) {
@@ -208,7 +231,13 @@ public class ClienteMbService {
             base = BigDecimal.ZERO;
         }
 
-        BigDecimal net = hasDiscount ? base.multiply(new BigDecimal("0.9")) : base;
+        BigDecimal descPct = configuracionService.getValorDecimal("descuento_porcentaje", BigDecimal.ZERO);
+        BigDecimal multiplier = BigDecimal.ONE;
+        if (hasDiscount && descPct.compareTo(BigDecimal.ZERO) > 0) {
+            multiplier = BigDecimal.ONE.subtract(descPct.divide(new BigDecimal("100"), 4, java.math.RoundingMode.HALF_UP));
+        }
+
+        BigDecimal net = base.multiply(multiplier);
         entity.setTotalAmount(net);
 
         if (net.compareTo(BigDecimal.ZERO) <= 0) {
@@ -250,5 +279,10 @@ public class ClienteMbService {
 
     private BigDecimal nullSafe(BigDecimal value) {
         return value != null ? value : BigDecimal.ZERO;
+    }
+
+    private ClienteMbDto toDto(ClienteMb entity) {
+        return ClienteMbDto.fromEntity(entity,
+            configuracionService.getValorDecimal("iva_porcentaje", BigDecimal.ZERO));
     }
 }

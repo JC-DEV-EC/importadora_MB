@@ -12,7 +12,7 @@ public class OpenApiConfig {
     public OpenAPI importadoraMbOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Importadora MB API")
+                        .title("Sistema Gestión de Deudores API")
                         .description("API REST para gestión de clientes y autenticación de usuarios")
                         .version("1.0.0"));
     }

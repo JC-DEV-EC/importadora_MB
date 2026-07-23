@@ -37,7 +37,7 @@ function StatCard({ label, value, sub }: { label: string; value: string; sub?: s
   );
 }
 
-export function Dashboard() {
+export default function Dashboard() {
   const { user } = useAuth();
   const { data: clients, isLoading } = useAllClients();
   const navigate = useNavigate();
@@ -181,8 +181,10 @@ export function Dashboard() {
                     <p className="text-sm font-medium text-primary truncate">{c.fullName}</p>
                     <p className="text-xs text-muted">{c.city || "—"}</p>
                   </div>
-                  <Badge variant={c.status === "ACTIVE" ? "active" : "cancelled"}>{getStatusLabel(c.status)}</Badge>
-                  <span className="text-xs font-mono text-secondary shrink-0">{formatCurrency(c.totalAmount)}</span>
+                  <div className="w-24 text-center">
+                    <Badge>{getStatusLabel(c.status)}</Badge>
+                  </div>
+                  <span className="w-24 text-right text-xs font-mono text-secondary shrink-0">{formatCurrency(c.totalAmount)}</span>
                 </button>
               ))}
             </div>

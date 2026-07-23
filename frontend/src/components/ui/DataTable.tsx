@@ -57,21 +57,21 @@ export function DataTable<T>({
   return (
     <div className="overflow-x-auto">
       <div className="inline-block min-w-full align-middle">
-        <table className="min-w-full divide-y border-light">
+        <table className="min-w-full">
           <thead>
             <tr className="bg-surface">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={cn(
-                    "px-4 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted",
+                    "px-4 py-3 text-left text-xs font-medium text-muted",
                     col.sortable && "cursor-pointer select-none hover:text-secondary",
                     col.hideOnMobile && "hidden lg:table-cell",
                     col.className
                   )}
                   onClick={() => col.sortable && handleSort(col.key)}
                 >
-                  <div className="flex items-center gap-1">
+                  <div className={cn("flex items-center gap-1", col.className?.includes("text-right") && "justify-end")}>
                     {col.header}
                     {col.sortable && (
                       <span className="text-muted">
@@ -87,7 +87,7 @@ export function DataTable<T>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y border-light">
+          <tbody>
             {sorted.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="px-4 py-16 text-center text-sm text-muted">
@@ -100,8 +100,8 @@ export function DataTable<T>({
                   key={keyExtractor(item)}
                   onClick={() => onRowClick?.(item)}
                   className={cn(
-                    "transition-colors duration-150 bg-card",
-                    onRowClick && "cursor-pointer hover-bg"
+                    "bg-card transition-colors hover-bg",
+                    onRowClick && "cursor-pointer"
                   )}
                 >
                   {columns.map((col) => (

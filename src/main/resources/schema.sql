@@ -66,21 +66,45 @@ CREATE TABLE IF NOT EXISTS configuracion_mb (
     id SERIAL PRIMARY KEY,
     clave VARCHAR(100) UNIQUE NOT NULL,
     valor TEXT NOT NULL,
-    descripcion VARCHAR(255)
+    descripcion VARCHAR(255),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP
 );
-
-INSERT INTO plantillas_mb (nombre, tipo, asunto, cuerpo, variables, activo) 
-SELECT 'Recordatorio de Pago', 'RECORDATORIO', 'Recordatorio de pago pendiente', 
-'Hola {nombre}, te recordamos que tienes un saldo pendiente de  con vencimiento el {fecha}. Por favor realiza tu pago a la brevedad. Gracias, Importadora MB.',
-'{nombre}, {monto}, {fecha}', true
-WHERE NOT EXISTS (SELECT 1 FROM plantillas_mb WHERE nombre = 'Recordatorio de Pago');
-
-INSERT INTO plantillas_mb (nombre, tipo, asunto, cuerpo, variables, activo) 
-SELECT 'Notificacion de Cobro', 'COBRO', 'Aviso de cobro', 
-'Estimado {nombre}, su factura con monto de  se encuentra vencida. Lo invitamos a acercarse a nuestras oficinas para regularizar su situacion.',
-'{nombre}, {monto}', true
-WHERE NOT EXISTS (SELECT 1 FROM plantillas_mb WHERE nombre = 'Notificacion de Cobro');
 
 ALTER TABLE clientes_mb ADD COLUMN IF NOT EXISTS phone VARCHAR(20);
 ALTER TABLE clientes_mb ADD COLUMN IF NOT EXISTS email VARCHAR(100);
 ALTER TABLE clientes_mb ADD COLUMN IF NOT EXISTS cedula VARCHAR(20);
+ALTER TABLE configuracion_mb ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW();
+ALTER TABLE configuracion_mb ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP;
+
+INSERT INTO configuracion_mb (clave, valor, descripcion, created_at, updated_at)
+SELECT * FROM (VALUES
+    ('interes_mora', '2.5', 'Interés mensual por mora (%)', NOW(), NOW()),
+    ('dias_gracia', '15', 'Días de gracia antes de aplicar mora', NOW(), NOW()),
+    ('iva_porcentaje', '12', 'Porcentaje de IVA aplicado', NOW(), NOW()),
+    ('descuento_porcentaje', '10', 'Porcentaje de descuento al activar descuento en cliente', NOW(), NOW()),
+    ('whatsapp_numero', '+593 99 999 9999', 'Número de WhatsApp para notificaciones', NOW(), NOW()),
+    ('email_contacto', 'info@importadoramb.com', 'Correo de contacto para notificaciones', NOW(), NOW()),
+    ('limite_credito_default', '500.00', 'Límite de crédito por defecto al crear cliente', NOW(), NOW()),
+    ('nombre_empresa', 'Importadora MB', 'Nombre de la empresa que se muestra en la interfaz', NOW(), NOW())
+) AS v(clave, valor, descripcion, created_at, updated_at)
+ON CONFLICT (clave) DO NOTHING;
+
+INSERT INTO auditoria_mb (usuario_id, usuario_nombre, accion, entidad, entidad_id, detalle, created_at)
+SELECT * FROM (VALUES
+    (1, 'Sistema', 'CREAR', 'CONFIGURACION', NULL, 'Configuración inicial del sistema', NOW() - INTERVAL '30 days'),
+    (4, 'Admin Principal', 'CREAR', 'CLIENTE', 1, 'Creación del cliente Juan Pérez', NOW() - INTERVAL '25 days'),
+    (4, 'Admin Principal', 'CREAR', 'CLIENTE', 2, 'Creación del cliente María García', NOW() - INTERVAL '24 days'),
+    (3, 'Agente Ventas', 'PAGO', 'CLIENTE', 1, 'Registro de pago por $150.00 - Saldo: $350.00', NOW() - INTERVAL '10 days'),
+    (4, 'Admin Principal', 'CARGO', 'CLIENTE', 2, 'Registro de cargo por $300.00 - Saldo: $800.00', NOW() - INTERVAL '8 days'),
+    (3, 'Agente Ventas', 'ACTUALIZAR', 'CLIENTE', 1, 'Actualización de teléfono y email', NOW() - INTERVAL '5 days'),
+    (4, 'Admin Principal', 'ACTUALIZAR', 'CONFIGURACION', NULL, 'Interés de mora actualizado a 3.0%', NOW() - INTERVAL '3 days'),
+    (3, 'Agente Ventas', 'CREAR', 'CLIENTE', 3, 'Creación del cliente Carlos López', NOW() - INTERVAL '2 days'),
+    (1, 'Sistema', 'CREAR', 'USUARIO', 4, 'Creación del usuario Admin Principal', NOW() - INTERVAL '20 days'),
+    (1, 'Sistema', 'CREAR', 'USUARIO', 3, 'Creación del usuario Agente Ventas', NOW() - INTERVAL '20 days')
+) AS v(usuario_id, usuario_nombre, accion, entidad, entidad_id, detalle, created_at)
+WHERE NOT EXISTS (SELECT 1 FROM auditoria_mb);
+
+UPDATE auditoria_mb a
+SET usuario_nombre = COALESCE((SELECT nombre FROM usuarios_mb u WHERE u.id = a.usuario_id), 'Sistema')
+WHERE a.usuario_nombre IS NULL OR a.usuario_nombre = '';

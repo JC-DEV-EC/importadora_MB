@@ -38,7 +38,7 @@ const barData = [
   { name: "Jun", deuda: 4900, pago: 3100 },
 ];
 
-export function Reportes() {
+export default function Reportes() {
   const { data: clients, isLoading } = useAllClients();
 
   const stats = useMemo(() => {

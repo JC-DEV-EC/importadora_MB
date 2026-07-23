@@ -1,5 +1,6 @@
 package com.importadora.mb.web;
 
+import com.importadora.mb.domain.UsuarioMb;
 import com.importadora.mb.domain.UsuarioMbRepository;
 import com.importadora.mb.service.ClienteMbService;
 import org.springframework.http.HttpStatus;
@@ -24,10 +25,9 @@ public class ClienteMbController {
         this.usuarioRepository = usuarioRepository;
     }
 
-    private Long obtenerUsuarioId(Principal principal) {
+    private UsuarioMb obtenerUsuario(Principal principal) {
         return usuarioRepository.findByEmail(principal.getName())
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"))
-            .getId();
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
     @GetMapping
@@ -47,39 +47,44 @@ public class ClienteMbController {
 
     @PostMapping
     public ResponseEntity<ClienteMbDto> create(@Valid @RequestBody ClientCreateRequest request, Principal principal) {
-        ClienteMbDto created = service.create(request, obtenerUsuarioId(principal));
+        UsuarioMb user = obtenerUsuario(principal);
+        ClienteMbDto created = service.create(request, user.getId(), user.getNombre());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ClienteMbDto> update(@PathVariable Long id,
-                                               @Valid @RequestBody ClientUpdateRequest request,
-                                               Principal principal) {
-        return service.update(id, request, obtenerUsuarioId(principal))
+                                                @Valid @RequestBody ClientUpdateRequest request,
+                                                Principal principal) {
+        UsuarioMb user = obtenerUsuario(principal);
+        return service.update(id, request, user.getId(), user.getNombre())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        service.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id, Principal principal) {
+        UsuarioMb user = obtenerUsuario(principal);
+        service.delete(id, user.getId(), user.getNombre());
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/charges")
     public ResponseEntity<ClienteMbDto> addCharge(@PathVariable Long id,
-                                                  @Valid @RequestBody ClientChargeRequest request,
-                                                  Principal principal) {
-        return service.addCharge(id, request, obtenerUsuarioId(principal))
+                                                   @Valid @RequestBody ClientChargeRequest request,
+                                                   Principal principal) {
+        UsuarioMb user = obtenerUsuario(principal);
+        return service.addCharge(id, request, user.getId(), user.getNombre())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/{id}/payments")
     public ResponseEntity<ClienteMbDto> addPayment(@PathVariable Long id,
-                                                    @Valid @RequestBody ClientPaymentRequest request,
-                                                    Principal principal) {
-        return service.addPayment(id, request, obtenerUsuarioId(principal))
+                                                     @Valid @RequestBody ClientPaymentRequest request,
+                                                     Principal principal) {
+        UsuarioMb user = obtenerUsuario(principal);
+        return service.addPayment(id, request, user.getId(), user.getNombre())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

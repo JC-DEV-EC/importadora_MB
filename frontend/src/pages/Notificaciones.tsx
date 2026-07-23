@@ -1,44 +1,18 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "../services/api";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { useToast } from "../components/ui/Toast";
-import { CheckCircle, AlertCircle, Info, AlertTriangle, CheckCheck, ChevronLeft, ChevronRight, Mail, MailOpen } from "lucide-react";
+import { CheckCircle, AlertCircle, Info, AlertTriangle, CheckCheck, ChevronLeft, ChevronRight, MailOpen, Bell } from "lucide-react";
 import { cn } from "../lib/utils";
-import type { PageResponse } from "../types";
+import { notificationService } from "../services/notificationService";
 
-interface NotificationDto {
-  id: number;
-  type: "success" | "error" | "warning" | "info";
-  message: string;
-  read: boolean;
-  timestamp: string;
-  clienteId?: number;
-  relatedClient?: string;
-}
-
-const notificationService = {
-  getAll: (page: number, size: number) =>
-    api.get<PageResponse<NotificationDto>>("/notifications", { params: { page, size } }).then((r) => r.data),
-  markRead: (id: number) =>
-    api.patch(`/notifications/${id}/read`).then((r) => r.data),
-  markAllRead: () =>
-    api.patch("/notifications/read-all").then((r) => r.data),
-};
-
-export function useNotifications(page: number, size: number) {
-  return useQuery({
-    queryKey: ["notifications", page, size],
-    queryFn: () => notificationService.getAll(page, size),
-  });
-}
-
-const typeConfig: Record<string, { icon: typeof CheckCircle; color: string; bg: string; dot: string }> = {
-  success: { icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-50", dot: "bg-emerald-500" },
-  error: { icon: AlertCircle, color: "text-rose-600", bg: "bg-rose-50", dot: "bg-rose-500" },
-  warning: { icon: AlertTriangle, color: "text-amber-600", bg: "bg-amber-50", dot: "bg-amber-500" },
-  info: { icon: Info, color: "text-sky-600", bg: "bg-sky-50", dot: "bg-sky-500" },
+const typeIcon: Record<string, typeof CheckCircle> = {
+  success: CheckCircle,
+  error: AlertCircle,
+  warning: AlertTriangle,
+  info: Info,
 };
 
 function timeAgo(timestamp: string): string {
@@ -53,16 +27,22 @@ function timeAgo(timestamp: string): string {
   return new Intl.DateTimeFormat("es-EC", { day: "numeric", month: "short" }).format(new Date(timestamp));
 }
 
-export function Notificaciones() {
+export default function Notificaciones() {
+  const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const size = 15;
-  const { data: pageData, isLoading } = useNotifications(page, size);
   const qc = useQueryClient();
   const { toast } = useToast();
+
+  const { data: pageData, isLoading } = useQuery({
+    queryKey: ["notifications", page, size],
+    queryFn: () => notificationService.getAll(page, size),
+  });
 
   const markReadMutation = useMutation({
     mutationFn: (id: number) => notificationService.markRead(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
+    onError: () => toast("error", "Error al marcar como leída"),
   });
 
   const markAllMutation = useMutation({
@@ -76,10 +56,10 @@ export function Notificaciones() {
   const notifications = pageData?.content ?? [];
   const totalPages = pageData?.totalPages ?? 0;
   const totalElements = pageData?.totalElements ?? 0;
-  const unreadCount = totalElements - notifications.filter((n) => n.read).length;
+  const unreadCount = notifications.filter((n) => !n.leido).length;
 
   return (
-    <div className="space-y-6" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+    <div className="space-y-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-primary">Notificaciones</h1>
@@ -99,53 +79,50 @@ export function Notificaciones() {
         </div>
       </div>
 
-      <Card>
+      <Card className="overflow-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-mb-500 border-t-transparent" />
           </div>
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Mail className="h-12 w-12 text-muted" />
+            <Bell className="h-12 w-12 text-muted" />
             <p className="mt-4 text-sm font-medium text-secondary">Sin notificaciones</p>
             <p className="text-xs text-muted">Las notificaciones aparecerán aquí</p>
           </div>
         ) : (
-          <div className="divide-y border-light" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+          <div>
             {notifications.map((n) => {
-              const cfg = typeConfig[n.type] || typeConfig.info;
-              const Icon = cfg.icon;
+              const Icon = typeIcon[n.tipo] || Info;
               return (
                 <div
                   key={n.id}
+                  onClick={() => n.clienteId && navigate(`/clients/${n.clienteId}`)}
                   className={cn(
-                    "flex items-start gap-4 px-5 py-4 transition-colors",
-                    !n.read && "bg-mb-50/40"
+                    "flex items-start gap-4 px-5 py-4 transition-colors hover-bg rounded-lg group",
+                    !n.leido && "bg-surface"
                   )}
                 >
-                  <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-full", cfg.bg)}>
-                    <Icon className={cn("h-4.5 w-4.5", cfg.color)} />
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface text-secondary">
+                    <Icon className="h-4.5 w-4.5" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className={cn("text-sm", n.read ? "text-secondary" : "font-medium text-primary")}>
-                        {n.message}
+                      <p className={cn("text-sm", n.leido ? "text-secondary" : "font-medium text-primary")}>
+                        {n.mensaje}
                       </p>
-                      {!n.read && <span className={cn("h-2 w-2 rounded-full shrink-0", cfg.dot)} />}
+                      {!n.leido && <span className="h-2 w-2 rounded-full shrink-0 bg-mb-500" />}
                     </div>
                     <div className="mt-1 flex items-center gap-3">
-                      <span className="text-xs text-muted">{timeAgo(n.timestamp)}</span>
-                      {n.relatedClient && (
-                        <span className="text-xs text-mb-600">{n.relatedClient}</span>
-                      )}
+                      <span className="text-xs text-muted">{timeAgo(n.createdAt)}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    {!n.read ? (
+                    {!n.leido ? (
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => markReadMutation.mutate(n.id)}
+                        onClick={(e) => { e.stopPropagation(); markReadMutation.mutate(n.id); }}
                         isLoading={markReadMutation.isPending}
                       >
                         <MailOpen className="h-3.5 w-3.5" />

@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import api from "../services/api";
-import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { useToast } from "../components/ui/Toast";
@@ -9,17 +8,17 @@ import type { ConfiguracionMbDto } from "../types";
 
 const configService = {
   getAll: () => api.get<ConfiguracionMbDto[]>("/configuracion").then((r) => r.data),
-  update: (id: number, valor: string) =>
-    api.patch(`/configuracion/${id}`, { valor }).then((r) => r.data),
+  update: (clave: string, valor: string) =>
+    api.put(`/configuracion/${clave}`, { valor }).then((r) => r.data),
 };
 
-export function Configuracion() {
+export default function Configuracion() {
   const { toast } = useToast();
   const [settings, setSettings] = useState<ConfiguracionMbDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
-  const [savingId, setSavingId] = useState<number | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -36,7 +35,7 @@ export function Configuracion() {
   useEffect(() => { fetchData(); }, []);
 
   const startEdit = (s: ConfiguracionMbDto) => {
-    setEditingId(s.id);
+    setEditingId(s.clave);
     setEditValue(s.valor);
   };
 
@@ -45,11 +44,11 @@ export function Configuracion() {
     setEditValue("");
   };
 
-  const saveSetting = useCallback(async (id: number) => {
-    setSavingId(id);
+  const saveSetting = useCallback(async (clave: string) => {
+    setSavingId(clave);
     try {
-      await configService.update(id, editValue);
-      setSettings((prev) => prev.map((s) => s.id === id ? { ...s, valor: editValue } : s));
+      await configService.update(clave, editValue);
+      setSettings((prev) => prev.map((s) => s.clave === clave ? { ...s, valor: editValue } : s));
       setEditingId(null);
       toast("success", "Configuración actualizada correctamente");
     } catch {
@@ -59,8 +58,8 @@ export function Configuracion() {
     }
   }, [editValue, toast]);
 
-  const handleKeyDown = (e: React.KeyboardEvent, id: number) => {
-    if (e.key === "Enter") saveSetting(id);
+  const handleKeyDown = (e: React.KeyboardEvent, clave: string) => {
+    if (e.key === "Enter") saveSetting(clave);
     if (e.key === "Escape") cancelEdit();
   };
 
@@ -71,7 +70,7 @@ export function Configuracion() {
         <p className="mt-1 text-sm text-secondary">Administra las variables de configuración</p>
       </div>
 
-      <Card>
+      <div className="border border-default rounded-lg bg-card overflow-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-mb-500 border-t-transparent" />
@@ -83,9 +82,9 @@ export function Configuracion() {
             <p className="text-xs text-muted">No hay variables de configuración disponibles</p>
           </div>
         ) : (
-          <div className="divide-y border-light">
+          <div>
             {settings.map((s) => (
-              <div key={s.id} className="flex items-center gap-4 px-4 py-4 sm:px-6">
+              <div key={s.id} className="flex items-center gap-4 px-4 py-4 sm:px-6 hover-bg rounded-lg transition-colors">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-primary font-mono">{s.clave}</span>
@@ -95,16 +94,16 @@ export function Configuracion() {
                   )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0 w-64">
-                  {editingId === s.id ? (
+                  {editingId === s.clave ? (
                     <>
                       <Input
                         value={editValue}
                         onChange={(e) => setEditValue(e.target.value)}
-                        onKeyDown={(e) => handleKeyDown(e, s.id)}
+                        onKeyDown={(e) => handleKeyDown(e, s.clave)}
                         className="flex-1"
                         autoFocus
                       />
-                      <Button size="sm" onClick={() => saveSetting(s.id)} isLoading={savingId === s.id}>
+                      <Button size="sm" onClick={() => saveSetting(s.clave)} isLoading={savingId === s.clave}>
                         <Save className="h-3.5 w-3.5" />
                       </Button>
                     </>
@@ -121,7 +120,7 @@ export function Configuracion() {
             ))}
           </div>
         )}
-      </Card>
+      </div>
     </div>
   );
 }

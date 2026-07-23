@@ -1,4 +1,6 @@
 import { NavLink } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { configuracionService } from "../../services/configuracionService";
 import {
   LayoutDashboard,
   Users,
@@ -39,6 +41,12 @@ const navGroups = [
 
 
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { data: nombreEmpresa } = useQuery({
+    queryKey: ["config", "nombre_empresa"],
+    queryFn: () => configuracionService.getByClave("nombre_empresa"),
+    staleTime: 5 * 60 * 1000,
+  });
+
   return (
     <>
       {open && (
@@ -53,13 +61,8 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="flex h-16 items-center gap-3 border-b border-white/10 px-6">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
-            <span className="text-sm font-bold text-white">MB</span>
-          </div>
-          <div className="leading-tight">
-            <h1 className="text-sm font-bold text-white">Importadora MB</h1>
-          </div>
+        <div className="flex pt-8 pb-4 items-center justify-center">
+          <img src="/logo.png" alt="MB" className="h-20 w-20 rounded-xl object-cover" />
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 py-5" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
@@ -98,7 +101,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         </div>
 
         <div className="border-t border-white/10 px-6 py-4">
-          <p className="text-[11px] text-white/30">&copy; {new Date().getFullYear()} Importadora MB</p>
+          <p className="text-[11px] text-white/30">&copy; {new Date().getFullYear()} {nombreEmpresa?.valor ?? "Importadora MB"}</p>
         </div>
       </aside>
     </>

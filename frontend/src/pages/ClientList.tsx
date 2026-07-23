@@ -6,14 +6,13 @@ import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Badge } from "../components/ui/Badge";
 import { Modal } from "../components/ui/Modal";
-import { Card } from "../components/ui/Card";
 import { useToast } from "../components/ui/Toast";
 import { Plus, Search, Trash2, Eye, Download, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cn, formatCurrency, formatDate, getStatusLabel } from "../lib/utils";
 import { clientService } from "../services/clientService";
 import type { ClienteMbDto } from "../types";
 
-export function ClientList() {
+export default function ClientList() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -115,11 +114,11 @@ export function ClientList() {
     {
       key: "status",
       header: "Estado",
-      render: (c) => <Badge variant={c.status === "ACTIVE" ? "active" : "cancelled"}>{getStatusLabel(c.status)}</Badge>,
+      render: (c) => <Badge>{getStatusLabel(c.status)}</Badge>,
     },
     {
       key: "actions",
-      header: "",
+      header: "Acciones",
       render: (c) => (
         <div className="flex items-center justify-end gap-1">
           <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/clients/${c.id}`); }}>
@@ -183,7 +182,7 @@ export function ClientList() {
         </div>
       </div>
 
-      <Card>
+      <div className="border border-default rounded-lg bg-card overflow-hidden">
         <DataTable
           columns={columns}
           data={filtered}
@@ -192,7 +191,7 @@ export function ClientList() {
           isLoading={isLoading}
           emptyMessage={q || statusFilter !== "ALL" ? "No se encontraron clientes con esos filtros" : "No hay clientes registrados"}
         />
-      </Card>
+      </div>
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between">

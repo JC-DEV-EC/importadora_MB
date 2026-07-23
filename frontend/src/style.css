@@ -23,51 +23,6 @@
 }
 
 :root {
-  --bg-body: #f0f2f5;
-  --bg-card: #ffffff;
-  --bg-surface: #f8fafc;
-  --bg-input: #ffffff;
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --text-muted: #94a3b8;
-  --border: #e2e8f0;
-  --border-light: #f1f5f9;
-  --hover: #f1f5f9;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
-  --badge-active-bg: #d1fae5;
-  --badge-active-text: #059669;
-  --badge-cancelled-bg: #ffe4e6;
-  --badge-cancelled-text: #e11d48;
-  --badge-pending-bg: #fef3c7;
-  --badge-pending-text: #d97706;
-  --badge-info-bg: #e0f2fe;
-  --badge-info-text: #0284c7;
-  --badge-default-bg: #f1f5f9;
-  --badge-default-text: #475569;
-  --btn-secondary-bg: #f1f5f9;
-  --btn-secondary-text: #334155;
-  --btn-secondary-hover: #e2e8f0;
-  --btn-outline-border: #cbd5e1;
-  --btn-outline-text: #475569;
-  --btn-outline-hover: #f8fafc;
-  --btn-ghost-text: #64748b;
-  --btn-ghost-hover: #f1f5f9;
-  --toast-success-bg: #d1fae5;
-  --toast-success-border: #a7f3d0;
-  --toast-success-text: #065f46;
-  --toast-error-bg: #ffe4e6;
-  --toast-error-border: #fecdd3;
-  --toast-error-text: #9f1239;
-  --toast-info-bg: #e0f2fe;
-  --toast-info-border: #bae6fd;
-  --toast-info-text: #075985;
-  --toast-warning-bg: #fef3c7;
-  --toast-warning-border: #fde68a;
-  --toast-warning-text: #92400e;
-}
-
-html.dark {
   --bg-body: #0a0f1e;
   --bg-card: #131a2b;
   --bg-surface: #0f1628;
@@ -80,16 +35,6 @@ html.dark {
   --hover: #1a2a45;
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.25);
   --shadow-md: 0 4px 6px rgba(0,0,0,0.35);
-  --badge-active-bg: rgba(5, 150, 105, 0.15);
-  --badge-active-text: #34d399;
-  --badge-cancelled-bg: rgba(225, 29, 72, 0.15);
-  --badge-cancelled-text: #fb7185;
-  --badge-pending-bg: rgba(217, 119, 6, 0.15);
-  --badge-pending-text: #fbbf24;
-  --badge-info-bg: rgba(2, 132, 199, 0.15);
-  --badge-info-text: #38bdf8;
-  --badge-default-bg: #1e293b;
-  --badge-default-text: #94a3b8;
   --btn-secondary-bg: #1e293b;
   --btn-secondary-text: #e2e8f0;
   --btn-secondary-hover: #334155;
@@ -129,8 +74,9 @@ html.dark {
 @layer utilities {
   .scrollbar-thin::-webkit-scrollbar { width: 4px; }
   .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
-  .scrollbar-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: var(--hover); }
+  .scrollbar-thin { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 
   .bg-card { background-color: var(--bg-card); }
   .bg-surface { background-color: var(--bg-surface); }
@@ -143,12 +89,6 @@ html.dark {
   .hover-bg:hover { background-color: var(--hover); }
   .shadow-card { box-shadow: var(--shadow-sm); }
   .shadow-card-hover { box-shadow: var(--shadow-md); }
-
-  .badge-active { background-color: var(--badge-active-bg); color: var(--badge-active-text); }
-  .badge-cancelled { background-color: var(--badge-cancelled-bg); color: var(--badge-cancelled-text); }
-  .badge-pending { background-color: var(--badge-pending-bg); color: var(--badge-pending-text); }
-  .badge-info { background-color: var(--badge-info-bg); color: var(--badge-info-text); }
-  .badge-default { background-color: var(--badge-default-bg); color: var(--badge-default-text); }
 
   .btn-secondary { background-color: var(--btn-secondary-bg); color: var(--btn-secondary-text); }
   .btn-secondary:hover { background-color: var(--btn-secondary-hover); }

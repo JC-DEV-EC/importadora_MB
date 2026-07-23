@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import api from "../services/api";
-import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { ChevronLeft, ChevronRight, ClipboardList, Search } from "lucide-react";
 import { formatDate } from "../lib/utils";
@@ -13,7 +12,7 @@ const auditoriaService = {
 
 const entidades = ["ALL", "CLIENTE", "USUARIO", "PLANTILLA"];
 
-export function Auditoria() {
+export default function Auditoria() {
   const [page, setPage] = useState(0);
   const [data, setData] = useState<AuditoriaMbDto[]>([]);
   const [totalPages, setTotalPages] = useState(0);
@@ -40,13 +39,13 @@ export function Auditoria() {
 
   const actionBadge = (accion: string) => {
     const cfg: Record<string, string> = {
-      CREAR: "bg-emerald-50 text-emerald-700",
-      ACTUALIZAR: "bg-sky-50 text-sky-700",
-      ELIMINAR: "bg-rose-50 text-rose-700",
-      PAGO: "bg-blue-50 text-blue-700",
-      CARGO: "bg-amber-50 text-amber-700",
+      CREAR: "bg-surface text-secondary",
+      ACTUALIZAR: "bg-surface text-secondary",
+      ELIMINAR: "bg-surface text-secondary",
+      PAGO: "bg-surface text-secondary",
+      CARGO: "bg-surface text-secondary",
     };
-    return cfg[accion] || "bg-slate-50 text-slate-700";
+    return cfg[accion] || "bg-surface text-secondary";
   };
 
   return (
@@ -69,7 +68,7 @@ export function Auditoria() {
         </select>
       </div>
 
-      <Card>
+      <div className="border border-default rounded-lg bg-card overflow-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-mb-500 border-t-transparent" />
@@ -81,36 +80,34 @@ export function Auditoria() {
             <p className="text-xs text-muted">Los cambios realizados aparecerán aquí</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y border-light">
-              <thead>
-                <tr className="bg-surface">
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted">Fecha</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted">Usuario</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted">Acción</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted">Entidad</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-muted">Detalle</th>
+          <table className="min-w-full">
+            <thead>
+              <tr className="bg-surface">
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted">Fecha</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted">Usuario</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted">Acción</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted">Entidad</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted">Detalle</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((a) => (
+                <tr key={a.id} className="bg-card">
+                  <td className="whitespace-nowrap px-4 py-3 text-sm text-muted">{formatDate(a.createdAt)}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-sm text-primary">{a.usuarioNombre}</td>
+                  <td className="whitespace-nowrap px-4 py-3">
+                    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${actionBadge(a.accion)}`}>
+                      {a.accion}
+                    </span>
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-sm text-secondary">{a.entidad}{a.entidadId ? ` #${a.entidadId}` : ""}</td>
+                  <td className="px-4 py-3 text-sm text-secondary max-w-xs truncate">{a.detalle || "—"}</td>
                 </tr>
-              </thead>
-              <tbody className="divide-y border-light">
-                {data.map((a) => (
-                  <tr key={a.id} className="bg-card transition-colors">
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-muted">{formatDate(a.createdAt)}</td>
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-primary">{a.usuarioNombre}</td>
-                    <td className="whitespace-nowrap px-4 py-3">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${actionBadge(a.accion)}`}>
-                        {a.accion}
-                      </span>
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-secondary">{a.entidad}{a.entidadId ? ` #${a.entidadId}` : ""}</td>
-                    <td className="px-4 py-3 text-sm text-secondary max-w-xs truncate">{a.detalle || "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         )}
-      </Card>
+      </div>
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between">

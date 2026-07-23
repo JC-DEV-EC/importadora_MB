@@ -1,19 +1,26 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
+import { useQuery } from "@tanstack/react-query";
+import { configuracionService } from "../services/configuracionService";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
-import { Sun, Moon } from "lucide-react";
 
-export function Login() {
+export default function Login() {
   const { login } = useAuth();
-  const { dark, toggle } = useTheme();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const { data: nombreEmpresa } = useQuery({
+    queryKey: ["config", "nombre_empresa"],
+    queryFn: () => configuracionService.getByClave("nombre_empresa"),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const empresa = nombreEmpresa?.valor ?? "Importadora MB";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,20 +37,11 @@ export function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4" style={{ background: "var(--bg-layout)" }}>
-      <button
-        onClick={toggle}
-        className="fixed top-4 right-4 rounded-lg p-2 text-muted transition-colors hover-bg"
-        title={dark ? "Modo claro" : "Modo oscuro"}
-      >
-        {dark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-      </button>
+    <div className="flex min-h-screen items-center justify-center px-4" style={{ background: "var(--bg-body)" }}>
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-mb-800 to-mb-900 text-lg font-extrabold text-white shadow-lg">
-            MB
-          </div>
-          <h1 className="text-2xl font-bold  text-primary">Importadora MB</h1>
+          <img src="/logo.png" alt="MB" className="mx-auto mb-4 h-24 w-24 rounded-2xl object-cover shadow-card" />
+          <h1 className="text-2xl font-bold  text-primary">{empresa}</h1>
           <p className="mt-1 text-sm text-secondary">Inicia sesión para continuar</p>
         </div>
 
@@ -61,7 +59,7 @@ export function Login() {
         </form>
 
         <p className="mt-6 text-center text-xs text-muted">
-          &copy; 2026 Importadora MB. Todos los derechos reservados.
+          &copy; 2026 {empresa}. Todos los derechos reservados.
         </p>
       </div>
     </div>

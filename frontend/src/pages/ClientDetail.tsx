@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useClient, useAddCharge, useAddPayment } from "../hooks/useClients";
 import { useMovements } from "../hooks/useMovements";
 import { Card, CardHeader } from "../components/ui/Card";
@@ -22,12 +23,19 @@ import {
   ChevronRight,
 } from "lucide-react";
 import type { MovimientoMbDto } from "../types";
+import { configuracionService } from "../services/configuracionService";
 
-export function ClientDetail() {
+export default function ClientDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const clientId = id ? Number(id) : null;
   const { data: client, isLoading } = useClient(clientId);
+  const { data: descConfig } = useQuery({
+    queryKey: ["config", "descuento_porcentaje"],
+    queryFn: () => configuracionService.getByClave("descuento_porcentaje"),
+    staleTime: 60000,
+  });
+  const descPct = descConfig?.valor ?? "10";
   const addCharge = useAddCharge();
   const addPayment = useAddPayment();
   const { toast } = useToast();
@@ -102,7 +110,7 @@ export function ClientDetail() {
             </span>
           </div>
         </div>
-        <Badge variant={client.status === "ACTIVE" ? "active" : "cancelled"}>
+        <Badge>
           {getStatusLabel(client.status)}
         </Badge>
       </div>
@@ -123,7 +131,7 @@ export function ClientDetail() {
         <Card>
           <p className="text-[11px] font-semibold text-muted">Descuento</p>
           <p className="mt-1.5 text-2xl font-bold  text-primary">
-            {client.discount ? "10%" : "0%"}
+            {client.discount ? `${descPct}%` : "0%"}
           </p>
         </Card>
       </div>
@@ -156,7 +164,7 @@ export function ClientDetail() {
               ["Correo", client.email ?? "—"],
               ["Cédula", client.cedula ?? "—"],
               ["Registro", formatDate(client.registrationDate)],
-              ["Descuento", client.discount ? "Sí (10%)" : "No"],
+              ["Descuento", client.discount ? `Sí (${descPct}%)` : "No"],
             ].map(([label, value]) => (
               <div key={label} className="flex items-center justify-between rounded-lg bg-surface px-4 py-2.5">
                 <span className="text-sm text-secondary">{label}</span>
@@ -174,7 +182,7 @@ export function ClientDetail() {
             {[
               ["Deuda total", formatCurrency(client.debt), "text-primary"],
               ["Total pagado", formatCurrency(client.payment), "text-emerald-600"],
-              ...(client.discount ? [["Descuento aplicado", "10%", "text-amber-600"]] : []),
+              ...(client.discount ? [["Descuento aplicado", `${descPct}%`, "text-amber-600"]] : []),
             ].map(([label, value, color]) => (
               <div key={label} className="flex items-center justify-between rounded-lg bg-surface px-4 py-2.5">
                 <span className="text-sm text-secondary">{label}</span>
@@ -191,7 +199,7 @@ export function ClientDetail() {
         </Card>
       </div>
 
-      <Card>
+      <Card className="overflow-hidden">
         <CardHeader>
           <h2 className="text-sm font-semibold text-primary">Historial de Movimientos</h2>
         </CardHeader>
@@ -204,11 +212,11 @@ export function ClientDetail() {
             <p className="text-xs text-muted">Los cargos y pagos aparecerán aquí</p>
           </div>
         ) : (
-          <div className="divide-y border-light">
+          <div>
             {movements.map((m: MovimientoMbDto) => (
-              <div key={m.id} className="flex items-center gap-4 px-4 py-3 hover-bg transition-colors">
+              <div key={m.id} className="flex items-center gap-4 px-4 py-3 hover-bg rounded-lg transition-colors">
                 <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
-                  m.tipo === "CARGO" ? "bg-rose-50 text-rose-600" : "bg-emerald-50 text-emerald-600"
+                  m.tipo === "CARGO" ? "bg-surface text-rose-500" : "bg-surface text-emerald-500"
                 }`}>
                   {m.tipo === "CARGO" ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
                 </div>
@@ -222,7 +230,7 @@ export function ClientDetail() {
                 </div>
                 <div className="text-right">
                   <p className={`text-sm font-mono font-medium ${
-                    m.tipo === "CARGO" ? "text-rose-600" : "text-emerald-600"
+                    m.tipo === "CARGO" ? "text-rose-500" : "text-emerald-500"
                   }`}>
                     {m.tipo === "CARGO" ? "+" : "-"}{formatCurrency(m.monto)}
                   </p>

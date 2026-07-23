@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useClient, useCreateClient, useUpdateClient } from "../hooks/useClients";
 import { Card, CardHeader } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
 import { useToast } from "../components/ui/Toast";
 import { ArrowLeft } from "lucide-react";
+import { configuracionService } from "../services/configuracionService";
 
-export function ClientForm() {
+export default function ClientForm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEdit = id !== undefined;
@@ -26,6 +28,13 @@ export function ClientForm() {
   const [email, setEmail] = useState("");
   const [cedula, setCedula] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const { data: descConfig } = useQuery({
+    queryKey: ["config", "descuento_porcentaje"],
+    queryFn: () => configuracionService.getByClave("descuento_porcentaje"),
+    staleTime: 60000,
+  });
+  const descPct = descConfig?.valor ?? "10";
 
   useEffect(() => {
     if (existing) {
@@ -106,7 +115,7 @@ export function ClientForm() {
           <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-default p-3 transition-colors hover-bg">
             <input type="checkbox" checked={discount} onChange={(e) => setDiscount(e.target.checked)} className="h-4 w-4 rounded text-mb-700 focus:ring-mb-400" style={{ borderColor: "var(--border)" }} />
             <div>
-              <span className="text-sm font-medium text-primary">Aplicar descuento del 10%</span>
+              <span className="text-sm font-medium text-primary">Aplicar descuento del {descPct}%</span>
               <p className="text-xs text-muted">El saldo final se reducirá automáticamente</p>
             </div>
           </label>

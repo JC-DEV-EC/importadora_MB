@@ -18,7 +18,7 @@ function useMonthNavigation() {
   return { year, month, prev, next };
 }
 
-export function Calendario() {
+export default function Calendario() {
   const navigate = useNavigate();
   const { year, month, prev, next } = useMonthNavigation();
   const [events, setEvents] = useState<CalendarioEvento[]>([]);
@@ -93,19 +93,16 @@ export function Calendario() {
                     <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-xs ${isToday ? "bg-mb-600 text-white font-bold" : "text-primary"}`}>
                       {dayNum}
                     </span>
-                    <div className="mt-1 space-y-0.5">
-                      {dayEvents.slice(0, 3).map((ev, i) => (
+                    <div className="mt-1 max-h-[52px] overflow-y-auto space-y-0.5 scrollbar-thin">
+                      {dayEvents.map((ev, i) => (
                         <button
                           key={i}
                           onClick={() => navigate(`/clients/${ev.clienteId}`)}
                           className="block w-full truncate rounded px-1 py-0.5 text-left text-[10px] font-medium bg-surface text-muted"
                         >
-                          {ev.tipo === "CARGO" ? "+" : "-"}{ev.monto != null ? formatCurrency(ev.monto) : ""}
+                          <span className="text-[9px] text-secondary">{ev.clienteNombre?.split(" ")[0]}</span> {ev.tipo === "CARGO" ? "+" : "-"}{ev.monto != null ? formatCurrency(ev.monto) : ""}
                         </button>
                       ))}
-                      {dayEvents.length > 3 && (
-                        <p className="text-[10px] text-muted px-1">+{dayEvents.length - 3} más</p>
-                      )}
                     </div>
                   </div>
                 );
@@ -120,17 +117,17 @@ export function Calendario() {
         {events.length === 0 ? (
           <p className="text-sm text-muted py-4 text-center">No hay movimientos este mes</p>
         ) : (
-          <div className="divide-y border-light max-h-64 overflow-y-auto">
+          <div className="max-h-64 overflow-y-auto scrollbar-thin -mx-1">
             {events.map((ev, i) => (
-              <div key={i} className="flex items-center gap-3 px-1 py-2.5 hover:bg-surface/50 rounded-lg transition-colors cursor-pointer" onClick={() => navigate(`/clients/${ev.clienteId}`)}>
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-secondary">
+              <div key={i} className="flex items-center gap-3 px-3 py-2.5 hover-bg rounded-lg transition-colors cursor-pointer" onClick={() => navigate(`/clients/${ev.clienteId}`)}>
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface text-secondary">
                   {ev.tipo === "CARGO" ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-primary truncate">{ev.title}</p>
-                  <p className="text-xs text-muted">{ev.date}</p>
+                  <p className="text-sm font-medium text-primary truncate">{ev.clienteNombre ?? ev.title}</p>
+                  <p className="text-xs text-muted">{ev.date} &middot; {ev.tipo === "CARGO" ? "Cargo" : "Abono"}</p>
                 </div>
-                <span className={`text-sm font-mono font-medium ${ev.tipo === "CARGO" ? "text-rose-600" : "text-emerald-600"}`}>
+                <span className={`text-sm font-mono font-medium shrink-0 ${ev.tipo === "CARGO" ? "text-rose-600" : "text-emerald-600"}`}>
                   {ev.tipo === "CARGO" ? "+" : "-"}{ev.monto != null ? formatCurrency(ev.monto) : ""}
                 </span>
               </div>
