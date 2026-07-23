@@ -45,13 +45,15 @@ export function useWebSocket() {
           }
         });
       },
+      onStompError: () => {},
+      onWebSocketClose: () => {},
     });
 
     client.activate();
     clientRef.current = client;
 
     return () => {
-      client.deactivate().then(() => {});
+      client.deactivate();
     };
   }, [user?.token]);
 }
