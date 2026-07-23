@@ -22,11 +22,13 @@ COPY --from=backend-builder /app/target/importadora-mb-backend-0.0.1-SNAPSHOT.ja
 COPY --from=frontend-builder /app/dist /usr/share/nginx/html
 COPY nginx-deploy.conf /etc/nginx/http.d/default.conf
 
-RUN addgroup -S appgroup && adduser -S -G appgroup appuser && \
+RUN sed -i '/^user /d' /etc/nginx/nginx.conf && \
+    addgroup -S appgroup && adduser -S -G appgroup appuser && \
+    mkdir -p /run/nginx && \
     chown -R appuser:appgroup /app /usr/share/nginx/html /var/lib/nginx /var/log/nginx /run && \
     chmod -R g+w /var/lib/nginx /var/log/nginx /run
 
 USER appuser
 EXPOSE 8080
 
-CMD sh -c "nginx && java -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -jar /app/app.jar"
+CMD sh -c "nginx && exec java -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -jar /app/app.jar"

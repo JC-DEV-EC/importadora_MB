@@ -105,6 +105,11 @@ SELECT * FROM (VALUES
 ) AS v(usuario_id, usuario_nombre, accion, entidad, entidad_id, detalle, created_at)
 WHERE NOT EXISTS (SELECT 1 FROM auditoria_mb);
 
-UPDATE auditoria_mb a
-SET usuario_nombre = COALESCE((SELECT nombre FROM usuarios_mb u WHERE u.id = a.usuario_id), 'Sistema')
-WHERE a.usuario_nombre IS NULL OR a.usuario_nombre = '';
+DO $$
+BEGIN
+    IF EXISTS (SELECT FROM pg_tables WHERE tablename = 'usuarios_mb') THEN
+        UPDATE auditoria_mb a
+        SET usuario_nombre = COALESCE((SELECT nombre FROM usuarios_mb u WHERE u.id = a.usuario_id), 'Sistema')
+        WHERE a.usuario_nombre IS NULL OR a.usuario_nombre = '';
+    END IF;
+END $$;
