@@ -1,36 +1,32 @@
-# ---- Build stage ----
-FROM maven:3.9-eclipse-temurin-21 AS builder
+# ---- Stage 1: Build frontend ----
+FROM node:20-alpine AS frontend-builder
 WORKDIR /app
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
 
-# Copy Maven descriptor and resolve dependencies first (better layer caching)
+# ---- Stage 2: Build backend ----
+FROM maven:3.9-eclipse-temurin-21 AS backend-builder
+WORKDIR /app
 COPY pom.xml .
 RUN mvn -q -DskipTests dependency:go-offline
-
-# Copy source and build
 COPY src ./src
 RUN mvn -q -DskipTests clean package
 
-# ---- Runtime stage ----
-FROM eclipse-temurin:21-jre
+# ---- Stage 3: Runtime (nginx + JRE) ----
+FROM eclipse-temurin:21-jre-alpine
+RUN apk add --no-cache nginx
 
-# Create non-root user and group
-RUN groupadd --system appgroup \
-    && useradd --system --create-home --gid appgroup appuser
+COPY --from=backend-builder /app/target/importadora-mb-backend-0.0.1-SNAPSHOT.jar /app/app.jar
+COPY --from=frontend-builder /app/dist /usr/share/nginx/html
+COPY nginx-deploy.conf /etc/nginx/http.d/default.conf
 
-WORKDIR /app
+RUN addgroup -S appgroup && adduser -S -G appgroup appuser && \
+    chown -R appuser:appgroup /app /usr/share/nginx/html /var/lib/nginx /var/log/nginx /run && \
+    chmod -R g+w /var/lib/nginx /var/log/nginx /run
 
-# Copy the built jar
-COPY --from=builder /app/target/importadora-mb-backend-0.0.1-SNAPSHOT.jar /app/app.jar
-
-# Expose HTTP port
+USER appuser
 EXPOSE 8080
 
-# Drop privileges
-USER appuser
-
-# Use a read-only filesystem at runtime if the platform supports it (Render sí lo soporta)
-# You can enable it in Render settings with "Read Only Root Filesystem".
-
-ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
-
-ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /app/app.jar"]
+CMD sh -c "nginx && java -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -jar /app/app.jar"
